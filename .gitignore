@@ -554,4 +554,4 @@ MigrationBackup/
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,jetbrains,windows,visualstudiocode,rider,dotnetcore
 
 ConsoleApp1/
-/Utils/CsRinRuLogin.cs
+/Utils/Secrets.cs

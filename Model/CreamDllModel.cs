@@ -57,7 +57,7 @@ namespace auto_creamapi.Model
             if (!(File.Exists("steam_api.dll") && File.Exists("steam_api64.dll")))
             {
                 MyLogger.Log.Information("Missing files, trying to download...");
-                new Action(async() => await DownloadDll(CsRinRuLogin.Username, CsRinRuLogin.Password))();
+                new Action(async() => await DownloadDll(Secrets.ForumUsername, Secrets.ForumPassword))();
             }
             else
             {

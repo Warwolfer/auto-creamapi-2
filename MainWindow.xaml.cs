@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using auto_creamapi.Model;
+using auto_creamapi.Utils;
 using Microsoft.Win32;
 
 namespace auto_creamapi
@@ -99,13 +100,20 @@ namespace auto_creamapi
         {
             if (int.TryParse(AppId.Text, out var appId))
             {
-                var app = new POCOs.App() {AppId = appId, Name = Game.Text};
-                var listOfDlc = await _cacheModel.GetListOfDlc(app,
-                    SteamDb.IsChecked != null && (bool) SteamDb.IsChecked);
-                var result = "";
-                listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));
-                listOfDlc.ForEach(x => result += $"{x.AppId}={x.Name}\n");
-                ListOfDlcs.Text = result;
+                if (appId > 0)
+                {
+                    var app = new POCOs.App() {AppId = appId, Name = Game.Text};
+                    var listOfDlc = await _cacheModel.GetListOfDlc(app,
+                        SteamDb.IsChecked != null && (bool) SteamDb.IsChecked);
+                    var result = "";
+                    listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));
+                    listOfDlc.ForEach(x => result += $"{x.AppId}={x.Name}\n");
+                    ListOfDlcs.Text = result;
+                }
+                else
+                {
+                    MyLogger.Log.Error($"GetListOfDlc: Invalid AppID {appId}");
+                }
             }
         }
 
@@ -154,8 +162,22 @@ namespace auto_creamapi
         {
             if (int.TryParse(AppId.Text, out var appId))
             {
-                var app = _cacheModel.GetAppById(appId);
-                if (app != null) Game.Text = app.Name;
+                if (appId > 0)
+                {
+                    var app = _cacheModel.GetAppById(appId);
+                    if (app != null)
+                    {
+                        Game.Text = app.Name;
+                    }
+                    else
+                    {
+                        MyLogger.Log.Error($"No app found for ID {appId}");
+                    }
+                }
+                else
+                {
+                    MyLogger.Log.Error($"SetNameById: Invalid AppID {appId}");
+                }
             }
         }
 
