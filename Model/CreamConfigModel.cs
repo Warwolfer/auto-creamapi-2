@@ -92,7 +92,7 @@ namespace auto_creamapi.Model
 
         private void ResetConfigData()
         {
-            Config.AppId = 0;
+            Config.AppId = -1;
             Config.Language = "";
             Config.UnlockAll = false;
             Config.ExtraProtection = false;

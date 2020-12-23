@@ -68,21 +68,24 @@ namespace auto_creamapi.Model
 
         private static void UpdateCache()
         {
+            MyLogger.Log.Information("Updating cache...");
             var updateNeeded = DateTime.Now.Subtract(File.GetCreationTimeUtc(CachePath)).TotalDays >= 1;
             string cacheString;
             if (updateNeeded)
             {
-                MyLogger.Log.Information("Updating cache...");
+                MyLogger.Log.Information("Getting content from API...");
                 var client = new HttpClient();
                 var httpCall = client.GetAsync(SteamUri);
                 var response = httpCall.Result;
                 var readAsStringAsync = response.Content.ReadAsStringAsync();
                 var responseBody = readAsStringAsync.Result;
+                MyLogger.Log.Information("Got content from API successfully. Writing to file...");
 
                 /*var writeAllTextAsync = File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
                 writeAllTextAsync.RunSynchronously();*/
                 File.WriteAllText(CachePath, responseBody, Encoding.UTF8);
                 cacheString = responseBody;
+                MyLogger.Log.Information("Cache written to file successfully.");
             }
             else
             {
@@ -205,7 +208,7 @@ namespace auto_creamapi.Model
             }
             else
             {
-                MyLogger.Log.Error($"Could not find game: {steamApp}");
+                MyLogger.Log.Error($"Could not get DLC: Invalid Steam App");
             }
 
             return dlcList;

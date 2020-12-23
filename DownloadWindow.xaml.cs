@@ -26,7 +26,7 @@ namespace auto_creamapi
 
         private void ProgressBar_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            MyLogger.Log.Information(ProgressBar.Value.ToString("N"));
+            //MyLogger.Log.Information(ProgressBar.Value.ToString("N"));
         }
     }
 }

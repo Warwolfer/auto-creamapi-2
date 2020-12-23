@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using auto_creamapi.Model;
@@ -23,13 +24,28 @@ namespace auto_creamapi
 
         public MainWindow()
         {
+            PreInit();
+            InitializeComponent();
+            new Action(PostInit).Invoke();
+        }
+
+        private static void PreInit()
+        {
             _cacheModel = CacheModel.Instance;
             _configModel = CreamConfigModel.Instance;
             _dllModel = CreamDllModel.Instance;
-            InitializeComponent();
+        }
+
+        private async void PostInit()
+        {
+            MainWindowGrid.IsEnabled = false;
+            var task = _dllModel.Initialize();
+            await task;
             _cacheModel.Languages.ForEach(x => Lang.Items.Add(x));
             Lang.SelectedItem = DefaultLangSelection;
             SteamDb.IsChecked = true;
+            task.Wait();
+            MainWindowGrid.IsEnabled = true;
             Status.Text = "Ready.";
         }
 
@@ -197,15 +213,15 @@ namespace auto_creamapi
                     }
                     else
                     {
-                        Game.Text = "";
-                        AppId.Text = "";
+                        /*Game.Text = "";
+                        AppId.Text = "";*/
                         MyLogger.Log.Error($"No app found for ID {appId}");
                     }
                 }
                 else
                 {
-                    Game.Text = "";
-                    AppId.Text = "";
+                    /*Game.Text = "";
+                    AppId.Text = "";*/
                     MyLogger.Log.Error($"SetNameById: Invalid AppID {appId}");
                 }
             }
@@ -213,7 +229,9 @@ namespace auto_creamapi
 
         private void ResetFormData()
         {
-            AppId.Text = _configModel.Config.AppId.ToString();
+            var configAppId = _configModel.Config.AppId;
+            AppId.Text = configAppId.ToString();
+            Game.Text = configAppId > 0 ? _cacheModel.GetAppById(configAppId).Name : "";
             Lang.SelectedItem = _configModel.Config.Language;
             UnlockAll.IsChecked = _configModel.Config.UnlockAll; // public bool UnlockAll;
             ExtraProtection.IsChecked = _configModel.Config.ExtraProtection; // public bool ExtraProtection;
@@ -229,7 +247,6 @@ namespace auto_creamapi
             }
 
             ListOfDlcs.Text = dlcListString;
-            SetNameById();
         }
 
         private void CheckExistance()

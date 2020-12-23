@@ -6,7 +6,7 @@
         xmlns:wcl="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
         mc:Ignorable="d"
         Title="Auto-CreamAPI" Width="420" Height="540" MinWidth="420" MinHeight="540">
-    <Grid>
+    <Grid Name="MainWindowGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
