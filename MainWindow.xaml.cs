@@ -224,7 +224,7 @@ namespace auto_creamapi
             {
                 foreach (var (id, name) in _configModel.Config.DlcList)
                 {
-                    dlcListString += $"{id}={name},\n";
+                    dlcListString += $"{id}={name}\n";
                 }
             }
 
