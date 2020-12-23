@@ -192,7 +192,7 @@ namespace auto_creamapi.Model
             var targetSteamApiDll = Path.Combine(TargetPath, _creamDlls[arch].Filename);
             var targetSteamApiOrigDll = Path.Combine(TargetPath, _creamDlls[arch].OrigFilename);
             var targetSteamApiDllBackup = Path.Combine(TargetPath, $"{_creamDlls[arch].Filename}.backup");
-            MyLogger.Log.Information($"Creating CreamAPI DLL @ {targetSteamApiDll}");
+            MyLogger.Log.Information($"Setting up CreamAPI DLL @ {TargetPath} (arch :{arch})");
             // Create backup of steam_api.dll
             File.Copy(targetSteamApiDll, targetSteamApiDllBackup, true);
             // Check if steam_api_o.dll already exists
