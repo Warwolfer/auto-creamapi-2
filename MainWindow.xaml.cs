@@ -126,12 +126,13 @@ namespace auto_creamapi
                 if (appId > 0)
                 {
                     var app = new SteamApp() {AppId = appId, Name = Game.Text};
-                    var task = _cacheModel.GetListOfDlc(app,
-                        SteamDb.IsChecked != null && (bool) SteamDb.IsChecked);
+                    var steamDbIsChecked = SteamDb.IsChecked != null && (bool) SteamDb.IsChecked;
+                    var task = _cacheModel.GetListOfDlc(app, steamDbIsChecked);
+                    MainWindowGrid.IsEnabled = false;
                     var listOfDlc = await task;
-                    var result = "";
                     if (task.IsCompletedSuccessfully)
                     {
+                        var result = "";
                         listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));
                         listOfDlc.ForEach(x => result += $"{x.AppId}={x.Name}\n");
                         ListOfDlcs.Text = result;
@@ -141,6 +142,7 @@ namespace auto_creamapi
                     {
                         Status.Text = $"Could not get DLC for AppID {appId}";
                     }
+                    MainWindowGrid.IsEnabled = true;
                 }
                 else
                 {
