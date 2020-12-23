@@ -22,19 +22,18 @@
 
   <ItemGroup>
     <Page Include="App.xaml" />
-    <Page Remove="ConsoleApp1\**" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <Compile Remove="ConsoleApp1\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="ConsoleApp1\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="ConsoleApp1\**" />
+    <Content Include="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="COPYING">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CourierPrime-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

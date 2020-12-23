@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Label Content="Select a game..." HorizontalAlignment="Left" Margin="0,0,0,10" VerticalAlignment="Top"/>
-        <DataGrid Name="DgApps" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" d:DataContext="{d:DesignInstance poco:App}" MouseDoubleClick="DgApps_OnMouseDoubleClick">
+        <DataGrid Name="DgApps" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" d:DataContext="{d:DesignInstance poco:SteamApp}" MouseDoubleClick="DgApps_OnMouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="AppID" Binding="{Binding AppId}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Game Name" Binding="{Binding Name}"></DataGridTextColumn>

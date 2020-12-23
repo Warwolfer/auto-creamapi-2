@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace auto_creamapi.POCOs
 {
-    public class App
+    public class SteamApp
     {
         [JsonPropertyName("appid")]
         public int AppId { get; set; }
@@ -16,21 +16,21 @@ namespace auto_creamapi.POCOs
             return $"AppId: {AppId}, Name: {Name}";
         }
 
-        public bool CompareId(App app)
+        public bool CompareId(SteamApp steamApp)
         {
-            return AppId.Equals(app.AppId);
+            return AppId.Equals(steamApp.AppId);
         }
     }
 
-    public class Applist
+    public class AppList
     {
         [JsonPropertyName("apps")]
-        public List<App> Apps { get; set; }
+        public List<SteamApp> Apps { get; set; }
     }
 
     public class SteamApps
     {
         [JsonPropertyName("applist")]
-        public Applist AppList { get; set; }
+        public AppList AppList { get; set; }
     }
 }

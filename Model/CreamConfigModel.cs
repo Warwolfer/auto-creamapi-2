@@ -9,23 +9,23 @@ using IniParser.Model;
 
 namespace auto_creamapi.Model
 {
+    public class CreamConfig
+    {
+        public int AppId { get; set; }
+        public string Language { get; set; }
+        public bool UnlockAll { get; set; }
+        public bool ExtraProtection { get; set; }
+        public bool ForceOffline { get; set; }
+        public Dictionary<int, string> DlcList { get; }
+
+        public CreamConfig()
+        {
+            DlcList = new Dictionary<int, string>();
+        }
+    }
     public sealed class CreamConfigModel
     {
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        public struct CreamConfig
-        {
-            public int AppId;
-            public string Language;
-            public bool UnlockAll;
-            public bool ExtraProtection;
-            public bool ForceOffline;
-            public Dictionary<int, string> DlcList;
-        }
-
-        private CreamConfig _config;
-
-        public CreamConfig Config => _config;
+        public CreamConfig Config { get; }
 
         private static readonly Lazy<CreamConfigModel> Lazy =
             new Lazy<CreamConfigModel>(() => new CreamConfigModel());
@@ -38,8 +38,8 @@ namespace auto_creamapi.Model
 
         private CreamConfigModel()
         {
-            _config.DlcList = new Dictionary<int, string>();
-            SetConfigData();
+            Config = new CreamConfig();
+            ResetConfigData();
         }
 
         public void ReadFile(string configFilePath)
@@ -50,23 +50,23 @@ namespace auto_creamapi.Model
                 var parser = new FileIniDataParser();
                 var data = parser.ReadFile(_configFilePath, Encoding.UTF8);
 
-                SetConfigData(); // clear previous config data
-                _config.AppId = Convert.ToInt32(data["steam"]["appid"]);
-                _config.Language = data["steam"]["language"];
-                _config.UnlockAll = Convert.ToBoolean(data["steam"]["unlockall"]);
-                _config.ExtraProtection = Convert.ToBoolean(data["steam"]["extraprotection"]);
-                _config.ForceOffline = Convert.ToBoolean(data["steam"]["forceoffline"]);
+                ResetConfigData(); // clear previous config data
+                Config.AppId = Convert.ToInt32(data["steam"]["appid"]);
+                Config.Language = data["steam"]["language"];
+                Config.UnlockAll = Convert.ToBoolean(data["steam"]["unlockall"]);
+                Config.ExtraProtection = Convert.ToBoolean(data["steam"]["extraprotection"]);
+                Config.ForceOffline = Convert.ToBoolean(data["steam"]["forceoffline"]);
 
                 var dlcCollection = data["dlc"];
                 foreach (var item in dlcCollection)
                 {
-                    _config.DlcList.Add(int.Parse(item.KeyName), item.Value);
+                    Config.DlcList.Add(int.Parse(item.KeyName), item.Value);
                 }
             }
             else
             {
                 MyLogger.Log.Information($"Config file does not exist @ {configFilePath}, skipping...");
-                SetConfigData();
+                ResetConfigData();
             }
         }
 
@@ -75,14 +75,14 @@ namespace auto_creamapi.Model
             var parser = new FileIniDataParser();
             var data = new IniData();
 
-            data["steam"]["appid"] = _config.AppId.ToString();
-            data["steam"]["language"] = _config.Language;
-            data["steam"]["unlockall"] = _config.UnlockAll.ToString();
-            data["steam"]["extraprotection"] = _config.ExtraProtection.ToString();
-            data["steam"]["forceoffline"] = _config.ForceOffline.ToString();
+            data["steam"]["appid"] = Config.AppId.ToString();
+            data["steam"]["language"] = Config.Language;
+            data["steam"]["unlockall"] = Config.UnlockAll.ToString();
+            data["steam"]["extraprotection"] = Config.ExtraProtection.ToString();
+            data["steam"]["forceoffline"] = Config.ForceOffline.ToString();
 
             data.Sections.AddSection("dlc");
-            foreach (var (key, value) in _config.DlcList)
+            foreach (var (key, value) in Config.DlcList)
             {
                 data["dlc"].AddKey(key.ToString(), value);
             }
@@ -90,14 +90,14 @@ namespace auto_creamapi.Model
             parser.WriteFile(_configFilePath, data, Encoding.UTF8);
         }
 
-        public void SetConfigData()
+        private void ResetConfigData()
         {
-            _config.AppId = 0;
-            _config.Language = "";
-            _config.UnlockAll = false;
-            _config.ExtraProtection = false;
-            _config.ForceOffline = false;
-            _config.DlcList.Clear();
+            Config.AppId = 0;
+            Config.Language = "";
+            Config.UnlockAll = false;
+            Config.ExtraProtection = false;
+            Config.ForceOffline = false;
+            Config.DlcList.Clear();
         }
 
         public void SetConfigData(int appId,
@@ -107,12 +107,11 @@ namespace auto_creamapi.Model
             bool forceOffline,
             string dlcList)
         {
-            _config.AppId = appId;
-            _config.Language = language;
-            _config.UnlockAll = unlockAll;
-            _config.ExtraProtection = extraProtection;
-            _config.ForceOffline = forceOffline;
-
+            Config.AppId = appId;
+            Config.Language = language;
+            Config.UnlockAll = unlockAll;
+            Config.ExtraProtection = extraProtection;
+            Config.ForceOffline = forceOffline;
             SetDlcFromString(dlcList);
         }
 
@@ -134,7 +133,7 @@ namespace auto_creamapi.Model
 
         private void SetDlcFromString(string dlcList)
         {
-            _config.DlcList.Clear();
+            Config.DlcList.Clear();
             var expression = new Regex(@"(?<id>.*) *= *(?<name>.*)");
             using var reader = new StringReader(dlcList);
             string line;
@@ -143,7 +142,7 @@ namespace auto_creamapi.Model
                 var match = expression.Match(line);
                 if (match.Success)
                 {
-                    _config.DlcList.Add(int.Parse(match.Groups["id"].Value), match.Groups["name"].Value);
+                    Config.DlcList.Add(int.Parse(match.Groups["id"].Value), match.Groups["name"].Value);
                 }
             }
         }
@@ -157,15 +156,15 @@ namespace auto_creamapi.Model
         public override string ToString()
         {
             var str = $"INI file: {_configFilePath}, " +
-                      $"AppID: {_config.AppId}, " +
-                      $"Language: {_config.Language}, " +
-                      $"UnlockAll: {_config.UnlockAll}, " +
-                      $"ExtraProtection: {_config.ExtraProtection}, " +
-                      $"ForceOffline: {_config.ForceOffline}, " +
-                      $"DLC ({_config.DlcList.Count}):\n[\n";
-            if (_config.DlcList.Count > 0)
+                      $"AppID: {Config.AppId}, " +
+                      $"Language: {Config.Language}, " +
+                      $"UnlockAll: {Config.UnlockAll}, " +
+                      $"ExtraProtection: {Config.ExtraProtection}, " +
+                      $"ForceOffline: {Config.ForceOffline}, " +
+                      $"DLC ({Config.DlcList.Count}):\n[\n";
+            if (Config.DlcList.Count > 0)
             {
-                foreach (var (key, value) in _config.DlcList)
+                foreach (var (key, value) in Config.DlcList)
                 {
                     str += $"  {key}={value},\n";
                 }

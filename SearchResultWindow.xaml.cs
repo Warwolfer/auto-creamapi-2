@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using auto_creamapi.POCOs;
 using auto_creamapi.Utils;
 using NinjaNye.SearchExtensions;
 using NinjaNye.SearchExtensions.Models;
@@ -22,7 +23,7 @@ namespace auto_creamapi
     /// </summary>
     public partial class SearchResultWindow
     {
-        public SearchResultWindow(IEnumerable<POCOs.App> list)
+        public SearchResultWindow(IEnumerable<SteamApp> list)
         {
             InitializeComponent();
             DgApps.ItemsSource = list;
@@ -47,10 +48,13 @@ namespace auto_creamapi
         {
             if (Application.Current.MainWindow is MainWindow currentMainWindow)
             {
-                var app = (POCOs.App) DgApps.SelectedItem;
-                MyLogger.Log.Information($"Successfully got app {app}");
-                currentMainWindow.Game.Text = app.Name;
-                currentMainWindow.AppId.Text = app.AppId.ToString();
+                var app = (SteamApp) DgApps.SelectedItem;
+                if (app != null)
+                {
+                    MyLogger.Log.Information($"Successfully got app {app}");
+                    currentMainWindow.Game.Text = app.Name;
+                    currentMainWindow.AppId.Text = app.AppId.ToString();
+                }
             }
 
             Close();

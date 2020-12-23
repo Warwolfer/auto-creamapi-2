@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using auto_creamapi.Model;
+using auto_creamapi.POCOs;
 using auto_creamapi.Utils;
 using Microsoft.Win32;
 
@@ -28,6 +30,7 @@ namespace auto_creamapi
             _cacheModel.Languages.ForEach(x => Lang.Items.Add(x));
             Lang.SelectedItem = DefaultLangSelection;
             SteamDb.IsChecked = true;
+            Status.Text = "Ready.";
         }
 
         /// <summary>
@@ -40,6 +43,7 @@ namespace auto_creamapi
             var app = _cacheModel.GetAppByName(Game.Text);
             if (app != null)
             {
+                Game.Text = app.Name;
                 AppId.Text = app.AppId.ToString();
             }
             else
@@ -67,6 +71,7 @@ namespace auto_creamapi
 
         private void MyOpenFile()
         {
+            Status.Text = "Waiting for file...";
             var dialog = new OpenFileDialog
             {
                 Filter = "SteamAPI DLL|steam_api.dll;steam_api64.dll|" +
@@ -87,6 +92,7 @@ namespace auto_creamapi
                     _dllModel.TargetPath = dirPath;
                     _dllModel.CheckExistence();
                     CheckExistance();
+                    Status.Text = "Ready.";
                 }
             }
         }
@@ -98,22 +104,38 @@ namespace auto_creamapi
         /// <param name="e"></param>
         private async void GetListOfDlc_Click(object sender, RoutedEventArgs e)
         {
+            Status.Text = "Trying to get DLC...";
             if (int.TryParse(AppId.Text, out var appId))
             {
                 if (appId > 0)
                 {
-                    var app = new POCOs.App() {AppId = appId, Name = Game.Text};
-                    var listOfDlc = await _cacheModel.GetListOfDlc(app,
+                    var app = new SteamApp() {AppId = appId, Name = Game.Text};
+                    var task = _cacheModel.GetListOfDlc(app,
                         SteamDb.IsChecked != null && (bool) SteamDb.IsChecked);
+                    var listOfDlc = await task;
                     var result = "";
-                    listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));
-                    listOfDlc.ForEach(x => result += $"{x.AppId}={x.Name}\n");
-                    ListOfDlcs.Text = result;
+                    if (task.IsCompletedSuccessfully)
+                    {
+                        listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));
+                        listOfDlc.ForEach(x => result += $"{x.AppId}={x.Name}\n");
+                        ListOfDlcs.Text = result;
+                        Status.Text = $"Got DLC for AppID {appId}";
+                    }
+                    else
+                    {
+                        Status.Text = $"Could not get DLC for AppID {appId}";
+                    }
                 }
                 else
                 {
+                    Status.Text = $"Could not get DLC for AppID {appId}";
                     MyLogger.Log.Error($"GetListOfDlc: Invalid AppID {appId}");
                 }
+            }
+            else
+            {
+                Status.Text = $"Could not get DLC: Invalid AppID {appId}";
+                MyLogger.Log.Error($"GetListOfDlc: Invalid AppID {appId}");
             }
         }
 
@@ -124,6 +146,7 @@ namespace auto_creamapi
         /// <param name="e"></param>
         private void Save_Click(object sender, RoutedEventArgs e)
         {
+            Status.Text = "Saving...";
             _configModel.SetConfigData(
                     Convert.ToInt32(AppId.Text),
                     Lang.SelectedItem.ToString(),
@@ -135,6 +158,7 @@ namespace auto_creamapi
             _configModel.SaveFile();
             _dllModel.Save();
             CheckExistance();
+            Status.Text = "Saving successful.";
         }
 
         /// <summary>
@@ -144,8 +168,10 @@ namespace auto_creamapi
         /// <param name="e"></param>
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
+            Status.Text = "Resetting...";
             ResetFormData();
             CheckExistance();
+            Status.Text = "Resetting successful.";
         }
 
         /// <summary>
@@ -171,11 +197,15 @@ namespace auto_creamapi
                     }
                     else
                     {
+                        Game.Text = "";
+                        AppId.Text = "";
                         MyLogger.Log.Error($"No app found for ID {appId}");
                     }
                 }
                 else
                 {
+                    Game.Text = "";
+                    AppId.Text = "";
                     MyLogger.Log.Error($"SetNameById: Invalid AppID {appId}");
                 }
             }
@@ -204,9 +234,43 @@ namespace auto_creamapi
 
         private void CheckExistance()
         {
-            
-            creamApiApplied.IsChecked = _dllModel.CreamApiApplied();
-            configExists.IsChecked = _configModel.ConfigExists();
+            CreamApiApplied.IsChecked = _dllModel.CreamApiApplied();
+            ConfigExists.IsChecked = _configModel.ConfigExists();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            // for .NET Core you need to add UseShellExecute = true
+            // see https://docs.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.useshellexecute#property-value
+            // UseShellExecute = true;
+            Status.Text = "Opening URL...";
+            if (int.TryParse(AppId.Text, out var appId))
+            {
+                if (appId > 0)
+                {
+                    var searchTerm = appId;//$"{Game.Text.Replace(" ", "+")}+{appId}";
+                    var destinationUrl = 
+                        "https://cs.rin.ru/forum/search.php?keywords=" +
+                        searchTerm +
+                        "&terms=any&fid[]=10&sf=firstpost&sr=topics&submit=Search";
+                    var uri = new Uri(destinationUrl);
+                    var process = new ProcessStartInfo(uri.AbsoluteUri)
+                    {
+                        UseShellExecute = true
+                    };
+                    Process.Start(process);
+                }
+                else
+                {
+                    MyLogger.Log.Error($"OpenURL: Invalid AppID {appId}");
+                    Status.Text = $"Could not open URL: Invalid AppID {appId}";
+                }
+            }
+            else
+            {
+                MyLogger.Log.Error($"OpenURL: Invalid AppID {appId}");
+                Status.Text = $"Could not open URL: Invalid AppID {appId}";
+            }
         }
     }
 }

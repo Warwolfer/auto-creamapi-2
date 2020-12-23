@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -11,7 +10,6 @@ using AngleSharp.Html.Parser;
 using auto_creamapi.POCOs;
 using auto_creamapi.Utils;
 using NinjaNye.SearchExtensions;
-using NinjaNye.SearchExtensions.Models;
 using SteamStorefrontAPI;
 
 namespace auto_creamapi.Model
@@ -23,7 +21,7 @@ namespace auto_creamapi.Model
         private const string UserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/87.0.4280.88 Safari/537.36";
-        private static List<POCOs.App> _cache = new List<POCOs.App>();
+        private static List<SteamApp> _cache = new List<SteamApp>();
 
         public readonly List<string> Languages = new List<string>(new[]
         {
@@ -97,7 +95,7 @@ namespace auto_creamapi.Model
             MyLogger.Log.Information("Loaded cache into memory!");
         }
 
-        public EnumerableStringSearch<POCOs.App> GetListOfAppsByName(string name)
+        public EnumerableStringSearch<SteamApp> GetListOfAppsByName(string name)
         {
             var listOfAppsByName = _cache.Search(x => x.Name)
                 .SetCulture(StringComparison.OrdinalIgnoreCase)
@@ -105,7 +103,7 @@ namespace auto_creamapi.Model
             return listOfAppsByName;
         }
 
-        public POCOs.App GetAppByName(string name)
+        public SteamApp GetAppByName(string name)
         {
             MyLogger.Log.Information($"Trying to get app {name}");
             var app = _cache.Find(x => x.Name.ToLower().Equals(name.ToLower()));
@@ -113,7 +111,7 @@ namespace auto_creamapi.Model
             return app;
         }
 
-        public POCOs.App GetAppById(int appid)
+        public SteamApp GetAppById(int appid)
         {
             MyLogger.Log.Information($"Trying to get app with ID {appid}");
             var app = _cache.Find(x => x.AppId.Equals(appid));
@@ -121,18 +119,18 @@ namespace auto_creamapi.Model
             return app;
         }
 
-        public async Task<List<POCOs.App>> GetListOfDlc(POCOs.App app, bool useSteamDb)
+        public async Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb)
         {
             MyLogger.Log.Information("Get DLC");
-            var dlcList = new List<POCOs.App>();
-            if (app != null)
+            var dlcList = new List<SteamApp>();
+            if (steamApp != null)
             {
-                var task = AppDetails.GetAsync(app.AppId);
-                var steamApp = await task;
-                steamApp?.DLC.ForEach(x =>
+                var task = AppDetails.GetAsync(steamApp.AppId);
+                var steamAppDetails = await task;
+                steamAppDetails?.DLC.ForEach(x =>
                 {
                     var result = _cache.Find(y => y.AppId.Equals(x)) ??
-                                 new POCOs.App {AppId = x, Name = $"Unknown DLC {x}"};
+                                 new SteamApp {AppId = x, Name = $"Unknown DLC {x}"};
                     dlcList.Add(result);
                 });
 
@@ -145,7 +143,7 @@ namespace auto_creamapi.Model
                 // Add missing to DLC list
                 if (useSteamDb)
                 {
-                    var steamDbUri = new Uri($"https://steamdb.info/app/{app.AppId}/dlc/");
+                    var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
 
                     /* var handler = new ClearanceHandler();
                 
@@ -185,7 +183,7 @@ namespace auto_creamapi.Model
                                 dlcName = query3[1].Text().Replace("\n", "").Trim();
                             }
 
-                            var dlcApp = new POCOs.App {AppId = Convert.ToInt32(dlcId), Name = dlcName};
+                            var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
                             var i = dlcList.FindIndex(x => x.CompareId(dlcApp));
                             if (i > -1)
                             {
@@ -207,7 +205,7 @@ namespace auto_creamapi.Model
             }
             else
             {
-                MyLogger.Log.Error($"Could not find game: {app}");
+                MyLogger.Log.Error($"Could not find game: {steamApp}");
             }
 
             return dlcList;
