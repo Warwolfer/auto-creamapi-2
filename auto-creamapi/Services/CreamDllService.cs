@@ -1,50 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using auto_creamapi.Services;
+using auto_creamapi.Models;
 using auto_creamapi.Utils;
-using SharpCompress.Archives;
-using SharpCompress.Common;
-using SharpCompress.Readers;
-using HttpProgress;
 
-namespace auto_creamapi.Model
+namespace auto_creamapi.Services
 {
-    internal class CreamDll
+    public interface ICreamDllService
     {
-        public readonly string Filename;
-        public readonly string OrigFilename;
-        public readonly string Hash;
-
-        public CreamDll(string filename, string origFilename)
-        {
-            Filename = filename;
-            OrigFilename = origFilename;
-            Hash = "";
-
-            using var md5 = MD5.Create();
-            if (File.Exists(Filename))
-            {
-                using var stream = File.OpenRead(Filename);
-                Hash = BitConverter
-                    .ToString(md5.ComputeHash(stream))
-                    .Replace("-", string.Empty);
-            }
-        }
+        public string TargetPath { get; set; }
+        public void Initialize();
+        //public Task InitializeAsync();
+        public void Save();
+        public void CheckIfDllExistsAtTarget();
+        public bool CreamApiApplied();
     }
-    public class CreamDllModel
-    {
-        private static readonly Lazy<CreamDllModel> Lazy =
-            new Lazy<CreamDllModel>(() => new CreamDllModel());
 
-        public static CreamDllModel Instance => Lazy.Value;
+    public class CreamDllService : ICreamDllService
+    {
+        private readonly IDownloadCreamApiService _downloadService;
         public string TargetPath { get; set; }
 
         private readonly Dictionary<string, CreamDll> _creamDlls = new Dictionary<string, CreamDll>();
@@ -55,20 +31,20 @@ namespace auto_creamapi.Model
         private bool _x86Exists;
         private bool _x64Exists;
 
-        private CreamDllModel()
+        public CreamDllService(IDownloadCreamApiService downloadService)
         {
+            _downloadService = downloadService;
         }
 
-        public async Task Initialize()
+        public Task InitializeAsync()
         {
-            if (!(File.Exists("steam_api.dll") && File.Exists("steam_api64.dll")))
-            {
-                MyLogger.Log.Information("Missing files, trying to download...");
-                var task = DownloadCreamApiService.DownloadAndExtract(Secrets.ForumUsername, Secrets.ForumPassword);
-                await task;
-                task.Wait();
-            }
-            
+            return Task.Run(Initialize);
+        }
+
+        public void Initialize()
+        {
+            MyLogger.Log.Debug("CreamDllService: Initialize begin");
+
             _creamDlls.Add(X86Arch, new CreamDll("steam_api.dll", "steam_api_o.dll"));
             _creamDlls.Add(X64Arch, new CreamDll("steam_api64.dll", "steam_api64_o.dll"));
 
@@ -81,6 +57,8 @@ namespace auto_creamapi.Model
                     $"{_creamDlls[X64Arch].Hash}  {_creamDlls[X64Arch].Filename}"
                 });
             }
+
+            MyLogger.Log.Debug("CreamDllService: Initialize end");
         }
 
         public void Save()
@@ -106,7 +84,7 @@ namespace auto_creamapi.Model
             File.Copy(sourceSteamApiDll, targetSteamApiDll, true);
         }
 
-        public void CheckExistence()
+        public void CheckIfDllExistsAtTarget()
         {
             var x86file = Path.Combine(TargetPath, "steam_api.dll");
             var x64file = Path.Combine(TargetPath, "steam_api64.dll");

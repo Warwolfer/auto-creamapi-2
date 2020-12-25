@@ -11,7 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using auto_creamapi.POCOs;
+using auto_creamapi.Models;
 using auto_creamapi.Utils;
 using NinjaNye.SearchExtensions;
 using NinjaNye.SearchExtensions.Models;
@@ -52,8 +52,8 @@ namespace auto_creamapi
                 if (app != null)
                 {
                     MyLogger.Log.Information($"Successfully got app {app}");
-                    currentMainWindow.Game.Text = app.Name;
-                    currentMainWindow.AppId.Text = app.AppId.ToString();
+                    //currentMainWindow.Game.Text = app.Name;
+                    //currentMainWindow.AppId.Text = app.AppId.ToString();
                 }
             }
 

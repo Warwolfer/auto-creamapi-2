@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:poco="clr-namespace:auto_creamapi.POCOs"
+        xmlns:models="clr-namespace:auto_creamapi.Models"
         mc:Ignorable="d"
         Title="Search Results" Width="420" Height="540" MinWidth="420" MinHeight="540">
     <Grid Margin="10,10,10,10">
@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Label Content="Select a game..." HorizontalAlignment="Left" Margin="0,0,0,10" VerticalAlignment="Top"/>
-        <DataGrid Name="DgApps" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" d:DataContext="{d:DesignInstance poco:SteamApp}" MouseDoubleClick="DgApps_OnMouseDoubleClick">
+        <DataGrid Name="DgApps" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" d:DataContext="{d:DesignInstance models:SteamApp}" MouseDoubleClick="DgApps_OnMouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="AppID" Binding="{Binding AppId}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Game Name" Binding="{Binding Name}"></DataGridTextColumn>

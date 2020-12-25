@@ -553,5 +553,6 @@ MigrationBackup/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,jetbrains,windows,visualstudiocode,rider,dotnetcore
 
-ConsoleApp1/
-/Utils/Secrets.cs
+**/Secrets.cs
+/MainWindow.xaml.BACKUP
+/MainWindow.xaml.cs.BACKUP

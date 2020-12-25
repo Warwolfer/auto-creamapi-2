@@ -7,23 +7,33 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using auto_creamapi.POCOs;
+using auto_creamapi.Models;
 using auto_creamapi.Utils;
 using NinjaNye.SearchExtensions;
 using SteamStorefrontAPI;
 
-namespace auto_creamapi.Model
+namespace auto_creamapi.Services
 {
-    public class CacheModel
+    public interface ICacheService
+    {
+        public List<string> Languages { get; }
+        public void UpdateCache();
+        public IEnumerable<SteamApp> GetListOfAppsByName(string name);
+        public SteamApp GetAppByName(string name);
+        public SteamApp GetAppById(int appid);
+        public Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb);
+    }
+
+    public class CacheService : ICacheService
     {
         private const string CachePath = "steamapps.json";
         private const string SteamUri = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
         private const string UserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/87.0.4280.88 Safari/537.36";
-        private static List<SteamApp> _cache = new List<SteamApp>();
 
-        public readonly List<string> Languages = new List<string>(new[]
+        private List<SteamApp> _cache = new List<SteamApp>();
+        private readonly List<string> _languages = new List<string>(new[]
         {
             "arabic",
             "bulgarian",
@@ -56,20 +66,23 @@ namespace auto_creamapi.Model
             "vietnamese"
         });
 
-        private static readonly Lazy<CacheModel> Lazy =
-            new Lazy<CacheModel>(() => new CacheModel());
+        /*private static readonly Lazy<CacheService> Lazy =
+            new Lazy<CacheService>(() => new CacheService());
 
-        public static CacheModel Instance => Lazy.Value;
+        public static CacheService Instance => Lazy.Value;*/
 
-        private CacheModel()
+        public CacheService()
         {
+            Languages = _languages;
             UpdateCache();
         }
 
-        private static void UpdateCache()
+        public List<string> Languages { get; }
+
+        public void UpdateCache()
         {
             MyLogger.Log.Information("Updating cache...");
-            var updateNeeded = DateTime.Now.Subtract(File.GetCreationTimeUtc(CachePath)).TotalDays >= 1;
+            var updateNeeded = DateTime.Now.Subtract(File.GetLastWriteTimeUtc(CachePath)).TotalDays >= 1;
             string cacheString;
             if (updateNeeded)
             {
@@ -81,8 +94,8 @@ namespace auto_creamapi.Model
                 var responseBody = readAsStringAsync.Result;
                 MyLogger.Log.Information("Got content from API successfully. Writing to file...");
 
-                /*var writeAllTextAsync = File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
-                writeAllTextAsync.RunSynchronously();*/
+                //var writeAllTextAsync = File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
+                //writeAllTextAsync.RunSynchronously();
                 File.WriteAllText(CachePath, responseBody, Encoding.UTF8);
                 cacheString = responseBody;
                 MyLogger.Log.Information("Cache written to file successfully.");
@@ -92,13 +105,13 @@ namespace auto_creamapi.Model
                 MyLogger.Log.Information("Cache already up to date!");
                 cacheString = File.ReadAllText(CachePath);
             }
-            
+
             var steamApps = JsonSerializer.Deserialize<SteamApps>(cacheString);
             _cache = steamApps.AppList.Apps;
             MyLogger.Log.Information("Loaded cache into memory!");
         }
 
-        public EnumerableStringSearch<SteamApp> GetListOfAppsByName(string name)
+        public IEnumerable<SteamApp> GetListOfAppsByName(string name)
         {
             var listOfAppsByName = _cache.Search(x => x.Name)
                 .SetCulture(StringComparison.OrdinalIgnoreCase)
@@ -197,6 +210,7 @@ namespace auto_creamapi.Model
                                 dlcList.Add(dlcApp);
                             }
                         }
+
                         dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
                         MyLogger.Log.Information("Got DLC from SteamDB successfully...");
                     }

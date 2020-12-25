@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using MvvmCross.ViewModels;
 
-namespace auto_creamapi.POCOs
+namespace auto_creamapi.Models
 {
     public class SteamApp
     {
@@ -13,7 +14,8 @@ namespace auto_creamapi.POCOs
 
         public override string ToString()
         {
-            return $"AppId: {AppId}, Name: {Name}";
+            //return $"AppId: {AppId}, Name: {Name}";
+            return $"{AppId}={Name}";
         }
 
         public bool CompareId(SteamApp steamApp)

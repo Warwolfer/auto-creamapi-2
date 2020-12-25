@@ -1,42 +1,48 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using auto_creamapi.Models;
 using auto_creamapi.Utils;
 using IniParser;
 using IniParser.Model;
 
-namespace auto_creamapi.Model
+namespace auto_creamapi.Services
 {
-    public class CreamConfig
+    public interface ICreamConfigService
     {
-        public int AppId { get; set; }
-        public string Language { get; set; }
-        public bool UnlockAll { get; set; }
-        public bool ExtraProtection { get; set; }
-        public bool ForceOffline { get; set; }
-        public Dictionary<int, string> DlcList { get; }
+        public CreamConfig Config { get; }
+        public void ReadFile(string configFilePath);
+        public void SaveFile();
 
-        public CreamConfig()
-        {
-            DlcList = new Dictionary<int, string>();
-        }
+        public void SetConfigData(int appId,
+            string language,
+            bool unlockAll,
+            bool extraProtection,
+            bool forceOffline,
+            string dlcList);
+
+        public void SetConfigData(int appId,
+            string language,
+            bool unlockAll,
+            bool extraProtection,
+            bool forceOffline,
+            List<SteamApp> dlcList);
+
+        public bool ConfigExists();
+
+
     }
-    public sealed class CreamConfigModel
+
+    public class CreamConfigService : ICreamConfigService
     {
         public CreamConfig Config { get; }
 
-        private static readonly Lazy<CreamConfigModel> Lazy =
-            new Lazy<CreamConfigModel>(() => new CreamConfigModel());
-
-        public static CreamConfigModel Instance => Lazy.Value;
-        
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         private string _configFilePath;
 
-        private CreamConfigModel()
+        public CreamConfigService()
         {
             Config = new CreamConfig();
             ResetConfigData();
@@ -45,7 +51,8 @@ namespace auto_creamapi.Model
         public void ReadFile(string configFilePath)
         {
             _configFilePath = configFilePath;
-            if (File.Exists(configFilePath)) {
+            if (File.Exists(configFilePath))
+            {
                 MyLogger.Log.Information($"Config file found @ {configFilePath}, parsing...");
                 var parser = new FileIniDataParser();
                 var data = parser.ReadFile(_configFilePath, Encoding.UTF8);
@@ -60,7 +67,8 @@ namespace auto_creamapi.Model
                 var dlcCollection = data["dlc"];
                 foreach (var item in dlcCollection)
                 {
-                    Config.DlcList.Add(int.Parse(item.KeyName), item.Value);
+                    //Config.DlcList.Add(int.Parse(item.KeyName), item.Value);
+                    Config.DlcList.Add(new SteamApp{AppId = int.Parse(item.KeyName), Name = item.Value});
                 }
             }
             else
@@ -82,10 +90,11 @@ namespace auto_creamapi.Model
             data["steam"]["forceoffline"] = Config.ForceOffline.ToString();
 
             data.Sections.AddSection("dlc");
-            foreach (var (key, value) in Config.DlcList)
+            Config.DlcList.ForEach(x => data["dlc"].AddKey(x.AppId.ToString(), x.Name));
+            /*foreach (var steamApp in Config.DlcList)
             {
                 data["dlc"].AddKey(key.ToString(), value);
-            }
+            }*/
 
             parser.WriteFile(_configFilePath, data, Encoding.UTF8);
         }
@@ -114,23 +123,22 @@ namespace auto_creamapi.Model
             Config.ForceOffline = forceOffline;
             SetDlcFromString(dlcList);
         }
-
-        /*private void SetConfigData(int appId,
+        
+        public void SetConfigData(int appId,
             string language,
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
-            List<POCOs.App> dlcList)
+            List<SteamApp> dlcList)
         {
-            _config.AppId = appId;
-            _config.Language = language;
-            _config.UnlockAll = unlockAll;
-            _config.ExtraProtection = extraProtection;
-            _config.ForceOffline = forceOffline;
-
-            SetDlcFromAppList(dlcList);
-        }*/
-
+            Config.AppId = appId;
+            Config.Language = language;
+            Config.UnlockAll = unlockAll;
+            Config.ExtraProtection = extraProtection;
+            Config.ForceOffline = forceOffline;
+            Config.DlcList = dlcList;
+        }
+        
         private void SetDlcFromString(string dlcList)
         {
             Config.DlcList.Clear();
@@ -142,15 +150,15 @@ namespace auto_creamapi.Model
                 var match = expression.Match(line);
                 if (match.Success)
                 {
-                    Config.DlcList.Add(int.Parse(match.Groups["id"].Value), match.Groups["name"].Value);
+                    Config.DlcList.Add(
+                        new SteamApp{AppId = int.Parse(match.Groups["id"].Value), Name = match.Groups["name"].Value});
                 }
             }
         }
-
-        /*private void SetDlcFromAppList(List<POCOs.App> dlcList)
+        /*private void SetDlcFromAppList(List<SteamApp> dlcList)
         {
-            _config.DlcList.Clear();
-            dlcList.ForEach(x => _config.DlcList.Add(x.AppId, x.Name));
+            Config.DlcList.Clear();
+            dlcList.ForEach(x => Config.DlcList.Add(x.AppId, x.Name));
         }*/
 
         public override string ToString()
@@ -164,12 +172,13 @@ namespace auto_creamapi.Model
                       $"DLC ({Config.DlcList.Count}):\n[\n";
             if (Config.DlcList.Count > 0)
             {
-                foreach (var (key, value) in Config.DlcList)
+                str = Config.DlcList.Aggregate(str, (current, x) => current + $"  {x.AppId}={x.Name},\n");
+                /*foreach (var (key, value) in Config.DlcList)
                 {
                     str += $"  {key}={value},\n";
-                }
-
+                }*/
             }
+
             str += "]";
 
             return str;
