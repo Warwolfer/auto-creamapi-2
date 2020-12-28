@@ -7,7 +7,7 @@
                  xmlns:viewModels="clr-namespace:auto_creamapi.ViewModels"
                  d:DataContext="{d:DesignInstance Type=viewModels:SearchResultViewModel}"
                  mc:Ignorable="d"
-                 Title="Search Results" Width="420" Height="540" MinWidth="420" MinHeight="540">
+                 Title="Auto-CreamAPI 2: Search Results" Width="420" Height="540" MinWidth="420" MinHeight="540">
     <Grid Margin="10,10,10,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

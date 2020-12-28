@@ -7,7 +7,7 @@
                  xmlns:viewModels="clr-namespace:auto_creamapi.ViewModels"
                  d:DataContext="{d:DesignInstance Type=viewModels:DownloadViewModel}"
                  mc:Ignorable="d"
-                 Title="Please wait..." Width="400" Height="200">
+                 Title="Auto-CreamAPI 2: Please wait..." Width="400" Height="200">
     <Grid Margin="10,10,10,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
