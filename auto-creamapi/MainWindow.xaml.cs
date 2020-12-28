@@ -1,6 +1,4 @@
-using System.Windows;
 using MvvmCross.Platforms.Wpf.Presenters.Attributes;
-using MvvmCross.Platforms.Wpf.Views;
 
 namespace auto_creamapi
 {

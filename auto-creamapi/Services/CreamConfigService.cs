@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace auto_creamapi.Services
     public interface ICreamConfigService
     {
         public CreamConfig Config { get; }
+        public void Initialize();
         public void ReadFile(string configFilePath);
         public void SaveFile();
 
@@ -31,21 +33,31 @@ namespace auto_creamapi.Services
             bool forceOffline,
             List<SteamApp> dlcList);
 
+        public void SetConfigData(int appId,
+            string language,
+            bool unlockAll,
+            bool extraProtection,
+            bool forceOffline,
+            ObservableCollection<SteamApp> dlcList);
+
         public bool ConfigExists();
-
-
     }
 
     public class CreamConfigService : ICreamConfigService
     {
-        public CreamConfig Config { get; }
-
         private string _configFilePath;
 
-        public CreamConfigService()
+        public CreamConfig Config { get; set; }
+
+        public void Initialize()
         {
+            //await Task.Run(() =>
+            //{
+            //MyLogger.Log.Debug("CreamConfigService: init start");
             Config = new CreamConfig();
             ResetConfigData();
+            //MyLogger.Log.Debug("CreamConfigService: init end");
+            //});
         }
 
         public void ReadFile(string configFilePath)
@@ -66,10 +78,8 @@ namespace auto_creamapi.Services
 
                 var dlcCollection = data["dlc"];
                 foreach (var item in dlcCollection)
-                {
                     //Config.DlcList.Add(int.Parse(item.KeyName), item.Value);
-                    Config.DlcList.Add(new SteamApp{AppId = int.Parse(item.KeyName), Name = item.Value});
-                }
+                    Config.DlcList.Add(new SteamApp {AppId = int.Parse(item.KeyName), Name = item.Value});
             }
             else
             {
@@ -99,16 +109,6 @@ namespace auto_creamapi.Services
             parser.WriteFile(_configFilePath, data, Encoding.UTF8);
         }
 
-        private void ResetConfigData()
-        {
-            Config.AppId = -1;
-            Config.Language = "";
-            Config.UnlockAll = false;
-            Config.ExtraProtection = false;
-            Config.ForceOffline = false;
-            Config.DlcList.Clear();
-        }
-
         public void SetConfigData(int appId,
             string language,
             bool unlockAll,
@@ -123,7 +123,7 @@ namespace auto_creamapi.Services
             Config.ForceOffline = forceOffline;
             SetDlcFromString(dlcList);
         }
-        
+
         public void SetConfigData(int appId,
             string language,
             bool unlockAll,
@@ -138,7 +138,37 @@ namespace auto_creamapi.Services
             Config.ForceOffline = forceOffline;
             Config.DlcList = dlcList;
         }
-        
+
+        public void SetConfigData(int appId,
+            string language,
+            bool unlockAll,
+            bool extraProtection,
+            bool forceOffline,
+            ObservableCollection<SteamApp> dlcList)
+        {
+            Config.AppId = appId;
+            Config.Language = language;
+            Config.UnlockAll = unlockAll;
+            Config.ExtraProtection = extraProtection;
+            Config.ForceOffline = forceOffline;
+            Config.DlcList = new List<SteamApp>(dlcList);
+        }
+
+        public bool ConfigExists()
+        {
+            return File.Exists(_configFilePath);
+        }
+
+        private void ResetConfigData()
+        {
+            Config.AppId = -1;
+            Config.Language = "";
+            Config.UnlockAll = false;
+            Config.ExtraProtection = false;
+            Config.ForceOffline = false;
+            Config.DlcList.Clear();
+        }
+
         private void SetDlcFromString(string dlcList)
         {
             Config.DlcList.Clear();
@@ -149,10 +179,8 @@ namespace auto_creamapi.Services
             {
                 var match = expression.Match(line);
                 if (match.Success)
-                {
                     Config.DlcList.Add(
-                        new SteamApp{AppId = int.Parse(match.Groups["id"].Value), Name = match.Groups["name"].Value});
-                }
+                        new SteamApp {AppId = int.Parse(match.Groups["id"].Value), Name = match.Groups["name"].Value});
             }
         }
         /*private void SetDlcFromAppList(List<SteamApp> dlcList)
@@ -171,22 +199,15 @@ namespace auto_creamapi.Services
                       $"ForceOffline: {Config.ForceOffline}, " +
                       $"DLC ({Config.DlcList.Count}):\n[\n";
             if (Config.DlcList.Count > 0)
-            {
                 str = Config.DlcList.Aggregate(str, (current, x) => current + $"  {x.AppId}={x.Name},\n");
-                /*foreach (var (key, value) in Config.DlcList)
+            /*foreach (var (key, value) in Config.DlcList)
                 {
                     str += $"  {key}={value},\n";
                 }*/
-            }
 
             str += "]";
 
             return str;
-        }
-
-        public bool ConfigExists()
-        {
-            return File.Exists(_configFilePath);
         }
     }
 }

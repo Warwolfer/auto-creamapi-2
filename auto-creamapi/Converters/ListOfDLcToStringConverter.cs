@@ -1,30 +1,40 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using auto_creamapi.Models;
+using auto_creamapi.Utils;
 using MvvmCross.Converters;
+using MvvmCross.Platforms.Wpf.Converters;
 
 namespace auto_creamapi.Converters
 {
-    public class ListOfDLcToStringConverter : MvxValueConverter<List<SteamApp>, string>
+    public class ListOfDLcToStringNativeConverter : MvxNativeValueConverter<ListOfDLcToStringConverter>
     {
-        protected override string Convert(List<SteamApp> value, Type targetType, object parameter, CultureInfo culture)
+    }
+
+    public class ListOfDLcToStringConverter : MvxValueConverter<ObservableCollection<SteamApp>, string>
+    {
+        protected override string Convert(ObservableCollection<SteamApp> value, Type targetType, object parameter,
+            CultureInfo culture)
         {
+            MyLogger.Log.Debug("ListOfDLcToStringConverter: Convert");
             var dlcListToString = DlcListToString(value);
             return dlcListToString.GetType() == targetType ? dlcListToString : "";
         }
 
-        protected override List<SteamApp> ConvertBack(string value, Type targetType, object parameter, CultureInfo culture)
+        protected override ObservableCollection<SteamApp> ConvertBack(string value, Type targetType, object parameter,
+            CultureInfo culture)
         {
+            MyLogger.Log.Debug("ListOfDLcToStringConverter: ConvertBack");
             var stringToDlcList = StringToDlcList(value);
-            return stringToDlcList.GetType() == targetType ? stringToDlcList : new List<SteamApp>();
+            return stringToDlcList.GetType() == targetType ? stringToDlcList : new ObservableCollection<SteamApp>();
         }
 
-        private static List<SteamApp> StringToDlcList(string value)
+        private static ObservableCollection<SteamApp> StringToDlcList(string value)
         {
-            var result = new List<SteamApp>();
+            var result = new ObservableCollection<SteamApp>();
             var expression = new Regex(@"(?<id>.*) *= *(?<name>.*)");
             using var reader = new StringReader(value);
             string line;
@@ -32,22 +42,21 @@ namespace auto_creamapi.Converters
             {
                 var match = expression.Match(line);
                 if (match.Success)
-                {
                     result.Add(new SteamApp
                     {
                         AppId = int.Parse(match.Groups["id"].Value),
                         Name = match.Groups["name"].Value
                     });
-                }
             }
 
             return result;
         }
 
-        private static string DlcListToString(List<SteamApp> value)
+        private static string DlcListToString(ObservableCollection<SteamApp> value)
         {
             var result = "";
-            value.ForEach(x => result += $"{x}\n");
+            //value.ForEach(x => result += $"{x}\n");
+            foreach (var steamApp in value) result += $"{steamApp}\n";
             return result;
         }
     }

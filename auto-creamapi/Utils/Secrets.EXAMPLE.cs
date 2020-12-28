@@ -1,10 +1,10 @@
 namespace auto_creamapi.Utils
 {
     /// <summary>
-    /// To use this:
-    /// Rename file Secrets.EXAMPLE.cs to Secrets.cs
-    /// Rename class Secrets_REMOVETHIS to Secrets
-    /// Enter the relevant info below
+    ///     To use this:
+    ///     Rename file Secrets.EXAMPLE.cs to Secrets.cs
+    ///     Rename class Secrets_REMOVETHIS to Secrets
+    ///     Enter the relevant info below
     /// </summary>
     public class Secrets_REMOVETHIS
     {

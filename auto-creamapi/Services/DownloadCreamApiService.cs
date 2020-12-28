@@ -6,9 +6,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Threading;
+using auto_creamapi.Messenger;
 using auto_creamapi.Utils;
 using HttpProgress;
+using MvvmCross.Plugin.Messenger;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -17,73 +18,26 @@ namespace auto_creamapi.Services
 {
     public interface IDownloadCreamApiService
     {
-        public void Initialize();
-        // public Task InitializeAsync();
-        public Task DownloadAndExtract(string username, string password);
+        /*public void Initialize();
+        public Task InitializeAsync();*/
+        public Task<string> Download(string username, string password);
+        public void Extract(string filename);
     }
+
     public class DownloadCreamApiService : IDownloadCreamApiService
     {
         private const string ArchivePassword = "cs.rin.ru";
-        private static string _filename;
-        //private static DownloadWindow _wnd;
 
-        public DownloadCreamApiService()
+        //private string _filename;
+        private readonly IMvxMessenger _messenger;
+        //private DownloadWindow _wnd;
+
+        public DownloadCreamApiService(IMvxMessenger messenger)
         {
-            
+            _messenger = messenger;
         }
 
-        public void Initialize()
-        {
-            MyLogger.Log.Debug("DownloadCreamApiService: Initialize begin");
-            if (File.Exists("steam_api.dll") && File.Exists("steam_api64.dll"))
-            {
-                MyLogger.Log.Information("Skipping download...");
-            }
-            else
-            {
-                MyLogger.Log.Information("Missing files, trying to download...");
-                DownloadAndExtract(Secrets.ForumUsername, Secrets.ForumPassword).Start();
-            }
-            //await creamDllService.InitializeAsync();
-            MyLogger.Log.Debug("DownloadCreamApiService: Initialize end");
-        }
-
-        public async Task InitializeAsync()
-        {
-            MyLogger.Log.Debug("DownloadCreamApiService: Initialize begin");
-            if (File.Exists("steam_api.dll") && File.Exists("steam_api64.dll"))
-            {
-                MyLogger.Log.Information("Skipping download...");
-            }
-            else
-            {
-                MyLogger.Log.Information("Missing files, trying to download...");
-                var downloadAndExtract = DownloadAndExtract(Secrets.ForumUsername, Secrets.ForumPassword);
-                await downloadAndExtract;
-                downloadAndExtract.Wait();
-            }
-            //await creamDllService.InitializeAsync();
-            MyLogger.Log.Debug("DownloadCreamApiService: Initialize end");
-        }
-
-        public async Task DownloadAndExtract(string username, string password)
-        {
-            MyLogger.Log.Debug("DownloadAndExtract");
-            //_wnd = new DownloadWindow();
-            //_wnd.Show();
-            var download = Download(username, password);
-            await download;
-            download.Wait();
-            /*var extract = Extract();
-            await extract;
-            extract.Wait();*/
-            var extract = Task.Run(Extract);
-            await extract;
-            extract.Wait();
-            //_wnd.Close();
-        }
-
-        private static async Task Download(string username, string password)
+        public async Task<string> Download(string username, string password)
         {
             MyLogger.Log.Debug("Download");
             var container = new CookieContainer();
@@ -125,69 +79,36 @@ namespace auto_creamapi.Services
                 }
             }
 
-            /*foreach (var (filename, url) in archiveFileList)
-            {
-                MyLogger.Log.Information($"Downloading file: {filename}");
-                var fileResponse = await client.GetAsync(url);
-                var download = fileResponse.Content.ReadAsByteArrayAsync();
-                await File.WriteAllBytesAsync(filename, await download);
-            }*/
             MyLogger.Log.Debug("Choosing first element from list...");
             var (filename, url) = archiveFileList.FirstOrDefault();
-            _filename = filename;
-            if (File.Exists(_filename))
+            //filename = filename;
+            if (File.Exists(filename))
             {
-                MyLogger.Log.Information($"{_filename} already exists, skipping download...");
-                return;
+                MyLogger.Log.Information($"{filename} already exists, skipping download...");
+                return filename;
             }
 
             MyLogger.Log.Information("Start download...");
-            /*await _wnd.FilenameLabel.Dispatcher.InvokeAsync(
-                () => _wnd.FilenameLabel.Content = _filename, DispatcherPriority.Background);
-            await _wnd.InfoLabel.Dispatcher.InvokeAsync(
-                () => _wnd.InfoLabel.Content = "Downloading...", DispatcherPriority.Background);*/
-            /*var fileResponse = await client.GetAsync(url);
-            var download = fileResponse.Content.ReadAsByteArrayAsync();
-            await File.WriteAllBytesAsync(filename, await download);
-            MyLogger.Log.Information($"Download success? {download.IsCompletedSuccessfully}");*/
             var progress = new Progress<ICopyProgress>(
-                x =>
-                {
-                    /*_wnd.PercentLabel.Dispatcher.Invoke(
-                        () => _wnd.PercentLabel.Content = x.PercentComplete.ToString("P"),
-                        DispatcherPriority.Background);
-                    _wnd.ProgressBar.Dispatcher.Invoke(
-                        () => _wnd.ProgressBar.Value = x.PercentComplete, DispatcherPriority.Background);*/
-                });
-            await using var fileStream = File.OpenWrite(_filename);
+                x => _messenger.Publish(new ProgressMessage(this, "Downloading...", filename, x)));
+            await using var fileStream = File.OpenWrite(filename);
             var task = client.GetAsync(url, fileStream, progress);
             var response = await task;
             if (task.IsCompletedSuccessfully)
-            {
-                /*_wnd.PercentLabel.Dispatcher.Invoke(
-                    () => _wnd.PercentLabel.Content = "100,00%", DispatcherPriority.Background);
-                _wnd.ProgressBar.Dispatcher.Invoke(
-                    () => _wnd.ProgressBar.Value = 1, DispatcherPriority.Background);*/
-            }
+                _messenger.Publish(new ProgressMessage(this, "Downloading...", filename, 1.0));
+            MyLogger.Log.Information("Download done.");
+            return filename;
         }
 
-        private static void Extract()
+        public void Extract(string filename)
         {
             MyLogger.Log.Debug("Extract");
-            MyLogger.Log.Information("Start extraction...");
+            MyLogger.Log.Information($@"Start extraction of ""{filename}""...");
             var options = new ReaderOptions {Password = ArchivePassword};
-            var archive = ArchiveFactory.Open(_filename, options);
+            var archive = ArchiveFactory.Open(filename, options);
             var expression1 = new Regex(@"nonlog_build\\steam_api(?:64)?\.dll");
-            /*await _wnd.ProgressBar.Dispatcher.InvokeAsync(
-                () => _wnd.ProgressBar.IsIndeterminate = true, DispatcherPriority.ContextIdle);
-            await _wnd.FilenameLabel.Dispatcher.InvokeAsync(
-                () => _wnd.FilenameLabel.Content = _filename, DispatcherPriority.ContextIdle);
-            await _wnd.InfoLabel.Dispatcher.InvokeAsync(
-                () => _wnd.InfoLabel.Content = "Extracting...", DispatcherPriority.ContextIdle);
-            await _wnd.PercentLabel.Dispatcher.InvokeAsync(
-                () => _wnd.PercentLabel.Content = "100%", DispatcherPriority.ContextIdle);*/
+            _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
             foreach (var entry in archive.Entries)
-            {
                 // ReSharper disable once InvertIf
                 if (!entry.IsDirectory && expression1.IsMatch(entry.Key))
                 {
@@ -198,7 +119,6 @@ namespace auto_creamapi.Services
                         Overwrite = true
                     });
                 }
-            }
 
             MyLogger.Log.Information("Extraction done!");
         }

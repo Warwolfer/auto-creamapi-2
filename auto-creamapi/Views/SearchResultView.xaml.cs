@@ -1,35 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using auto_creamapi.Models;
-using auto_creamapi.Utils;
-using NinjaNye.SearchExtensions;
-using NinjaNye.SearchExtensions.Models;
+﻿using MvvmCross.Platforms.Wpf.Presenters.Attributes;
 
-namespace auto_creamapi
+namespace auto_creamapi.Views
 {
     /// <summary>
-    /// Interaction logic for SearchResultWindow.xaml
+    ///     Interaction logic for SearchResultWindow.xaml
     /// </summary>
-    public partial class SearchResultWindow
+    [MvxWindowPresentation(Identifier = nameof(SearchResultView), Modal = false)]
+    public partial class SearchResultView
     {
-        public SearchResultWindow(IEnumerable<SteamApp> list)
+        public SearchResultView()
         {
             InitializeComponent();
-            DgApps.ItemsSource = list;
+            //DgApps.ItemsSource = list;
         }
 
-        private void OK_OnClick(object sender, RoutedEventArgs e)
+        /*private void OK_OnClick(object sender, RoutedEventArgs e)
         {
             GetSelectedApp();
         }
@@ -58,6 +43,6 @@ namespace auto_creamapi
             }
 
             Close();
-        }
+        }*/
     }
 }

@@ -1,18 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
-using auto_creamapi.Services;
-using auto_creamapi.Utils;
 
 namespace auto_creamapi.Models
 {
     internal class CreamDll
     {
         public readonly string Filename;
-        public readonly string OrigFilename;
         public readonly string Hash;
+        public readonly string OrigFilename;
 
         public CreamDll(string filename, string origFilename)
         {
@@ -30,8 +26,8 @@ namespace auto_creamapi.Models
             }
         }
     }
+
     public class CreamDllModel
     {
-        
     }
 }

@@ -1,6 +1,4 @@
-using auto_creamapi.Services;
 using auto_creamapi.ViewModels;
-using MvvmCross;
 using MvvmCross.IoC;
 using MvvmCross.ViewModels;
 

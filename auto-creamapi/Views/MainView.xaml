@@ -11,73 +11,102 @@
     xmlns:converters="clr-namespace:auto_creamapi.Converters"
     mc:Ignorable="d">
     <views:MvxWpfView.Resources>
-        <converters:ListOfDLcToStringConverter x:Key="DlcConv"/>
+        <converters:ListOfDLcToStringNativeConverter x:Key="DlcConv" />
     </views:MvxWpfView.Resources>
     <Grid IsEnabled="{Binding MainWindowEnabled, Mode=TwoWay}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <wcl:WatermarkTextBox x:Name="DllPath" Text="{Binding DllPath}" Watermark="Path to game's steam_api(64).dll..." Margin="10,11,55,0" TextWrapping="NoWrap" VerticalAlignment="Top" Padding="0" Grid.Row="0" IsReadOnly="True" IsReadOnlyCaretVisible="True">
+        <wcl:WatermarkTextBox x:Name="DllPath" Text="{Binding DllPath}" Watermark="Path to game's steam_api(64).dll..."
+                              Margin="10,11,55,0" TextWrapping="NoWrap" VerticalAlignment="Top" Padding="0"
+                              Grid.Row="0" IsReadOnly="True" IsReadOnlyCaretVisible="True">
             <!--MouseDoubleClick="{Binding Path=OpenFileCommand}"-->
             <wcl:WatermarkTextBox.InputBindings>
-                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding OpenFileCommand}"></MouseBinding>
+                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding OpenFileCommand}" />
             </wcl:WatermarkTextBox.InputBindings>
         </wcl:WatermarkTextBox>
-        <Button Content="&#xE1A5;" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" FontFamily="Segoe UI Symbol" Width="40" Command="{Binding OpenFileCommand}" ToolTip="Select DLL file." Grid.Row="0"/>
-        <wcl:WatermarkTextBox Text="{Binding GameName, Mode=TwoWay}" x:Name="Game" Margin="10,10,180,0" Watermark="Game Name" TextWrapping="Wrap" VerticalAlignment="Top" Padding="0" Grid.Row="1"/>
-        <Button Content="&#xE11A;" HorizontalAlignment="Right" Margin="0,9,135,0" VerticalAlignment="Top" FontFamily="Segoe UI Symbol" Width="40" Command="{Binding SearchCommand}" ToolTip="Find AppID." Grid.Row="1"/>
-        <wcl:WatermarkTextBox Text="{Binding AppId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="AppId" HorizontalAlignment="Right" Margin="0,10,10,0" Watermark="AppID" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Padding="0" Grid.Row="1" />
+        <Button Content="&#xE1A5;" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top"
+                FontFamily="Segoe UI Symbol" Width="40" Command="{Binding OpenFileCommand}" ToolTip="Select DLL file."
+                Grid.Row="0" />
+        <wcl:WatermarkTextBox Text="{Binding GameName, Mode=TwoWay}" x:Name="Game" Margin="10,10,180,0"
+                              Watermark="Game Name" TextWrapping="Wrap" VerticalAlignment="Top" Padding="0"
+                              Grid.Row="1" />
+        <Button Content="&#xE11A;" HorizontalAlignment="Right" Margin="0,9,135,0" VerticalAlignment="Top"
+                FontFamily="Segoe UI Symbol" Width="40" Command="{Binding SearchCommand}" ToolTip="Find AppID."
+                Grid.Row="1" />
+        <wcl:WatermarkTextBox Text="{Binding AppId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="AppId"
+                              HorizontalAlignment="Right" Margin="0,10,10,0" Watermark="AppID" TextWrapping="Wrap"
+                              VerticalAlignment="Top" Width="120" Padding="0" Grid.Row="1" />
         <TextBlock Grid.Row="2" Margin="10,10,10,0">
             <Hyperlink Command="{Binding GoToForumThreadCommand}">Search for cs.rin.ru thread</Hyperlink>
         </TextBlock>
-        <ComboBox x:Name="Lang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=Lang, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="120" Grid.Row="3"/>
-        <CheckBox x:Name="ForceOffline" Content="Force offline mode" IsChecked="{Binding Offline, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="offlinemode" Grid.Row="4"/>
-        <CheckBox x:Name="ExtraProtection" Content="Try to bypass game-specific protection" IsChecked="{Binding Extraprotection, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="extraprotection" Grid.Row="5"/>
+        <ComboBox x:Name="Lang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=Lang, Mode=TwoWay}"
+                  HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="120" Grid.Row="3" />
+        <CheckBox x:Name="ForceOffline" Content="Force offline mode" IsChecked="{Binding Offline, Mode=TwoWay}"
+                  HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="offlinemode"
+                  Grid.Row="4" />
+        <CheckBox x:Name="ExtraProtection" Content="Try to bypass game-specific protection"
+                  IsChecked="{Binding Extraprotection, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0"
+                  VerticalAlignment="Top" ToolTip="extraprotection" Grid.Row="5" />
         <Grid Margin="10,10,10,0" Grid.Row="6">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <GroupBox Header="DLC" Grid.Row="0" VerticalAlignment="Stretch">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <CheckBox x:Name="UnlockAll" Content="Unlock all DLCs (if possible)" IsChecked="{Binding Unlockall, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="unlockall"/>
-                    <CheckBox x:Name="SteamDb" Content="Additionally use SteamDB for DLCs" IsChecked="{Binding UseSteamDb, Mode=TwoWay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+                    <CheckBox x:Name="UnlockAll" Content="Unlock all DLCs (if possible)"
+                              IsChecked="{Binding Unlockall, Mode=TwoWay}" HorizontalAlignment="Left"
+                              Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="unlockall" />
+                    <CheckBox x:Name="SteamDb" Content="Additionally use SteamDB for DLCs"
+                              IsChecked="{Binding UseSteamDb, Mode=TwoWay}" HorizontalAlignment="Left"
+                              Margin="10,10,0,0" VerticalAlignment="Top" Grid.Row="1" />
                     <!-- Text="{Binding Dlcs, Converter={StaticResource DlcConv}, Mode=TwoWay}"-->
                     <!-- Text="{Binding DlcsString, Mode=TwoWay}"-->
-                    <wcl:WatermarkTextBox x:Name="ListOfDlcs" Text="{Binding Dlcs, Mode=TwoWay}" Margin="10,10,10,0" Watermark="List of DLCs...&#xA;0000 = DLC Name" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Padding="0" FontFamily="./#Courier Prime" Grid.Row="2"/>
-                    <Button Content="Get DLCs for AppID" Margin="0,10,10,10" Height="19.96" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="3"/>
+                    <wcl:WatermarkTextBox x:Name="ListOfDlcs"
+                                          Text="{Binding Dlcs, Converter={StaticResource DlcConv}, Mode=TwoWay}"
+                                          Margin="10,10,10,0" Watermark="List of DLCs...&#xA;0000 = DLC Name"
+                                          TextWrapping="Wrap" AcceptsReturn="True"
+                                          VerticalScrollBarVisibility="Visible" Padding="0"
+                                          FontFamily="./#Courier Prime" Grid.Row="2" />
+                    <Button Content="Get DLCs for AppID" Margin="0,10,10,10" Height="19.96" HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="3" />
                 </Grid>
             </GroupBox>
             <GroupBox Header="Status" Grid.Row="1" VerticalAlignment="Bottom" IsEnabled="False">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <CheckBox x:Name="CreamApiApplied" Content="CreamAPI DLL applied" Margin="10,10,0,10" Grid.Column="0" IsChecked="{Binding DllApplied, Mode=TwoWay}"/>
-                    <CheckBox x:Name="ConfigExists" Content="CreamAPI Config exists" Margin="10,10,0,10" Grid.Column="1" IsChecked="{Binding ConfigExists, Mode=TwoWay}"/>
+                    <CheckBox x:Name="CreamApiApplied" Content="CreamAPI DLL applied" Margin="10,10,0,10"
+                              Grid.Column="0" IsChecked="{Binding DllApplied, Mode=TwoWay}" />
+                    <CheckBox x:Name="ConfigExists" Content="CreamAPI Config exists" Margin="10,10,0,10"
+                              Grid.Column="1" IsChecked="{Binding ConfigExists, Mode=TwoWay}" />
                 </Grid>
             </GroupBox>
         </Grid>
-        <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,10,55,10" HorizontalAlignment="Right" Width="40" Height="20" VerticalAlignment="Bottom" Grid.Row="7"/>
-        <Button Content="Reset" Command="{Binding ResetFormCommand}" Margin="0,10,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="40" Grid.Row="7"/>
+        <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,10,55,10" HorizontalAlignment="Right"
+                Width="40" Height="20" VerticalAlignment="Bottom" Grid.Row="7" />
+        <Button Content="Reset" Command="{Binding ResetFormCommand}" Margin="0,10,10,10" Height="20"
+                VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="40" Grid.Row="7" />
         <StatusBar Grid.Row="8">
             <StatusBarItem Height="30" Margin="0,0,0,0">
-                <TextBlock x:Name="Status" Text="{Binding Status, Mode=TwoWay}"/>
+                <TextBlock x:Name="Status" Text="{Binding Status, Mode=TwoWay}" />
             </StatusBarItem>
         </StatusBar>
     </Grid>

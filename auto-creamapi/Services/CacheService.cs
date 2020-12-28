@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -17,7 +18,10 @@ namespace auto_creamapi.Services
     public interface ICacheService
     {
         public List<string> Languages { get; }
-        public void UpdateCache();
+
+        public Task Initialize();
+
+        //public Task UpdateCache();
         public IEnumerable<SteamApp> GetListOfAppsByName(string name);
         public SteamApp GetAppByName(string name);
         public SteamApp GetAppById(int appid);
@@ -28,43 +32,14 @@ namespace auto_creamapi.Services
     {
         private const string CachePath = "steamapps.json";
         private const string SteamUri = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
+
         private const string UserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/87.0.4280.88 Safari/537.36";
 
+        private const string SpecialCharsRegex = "[^0-9a-zA-Z]+";
+
         private List<SteamApp> _cache = new List<SteamApp>();
-        private readonly List<string> _languages = new List<string>(new[]
-        {
-            "arabic",
-            "bulgarian",
-            "schinese",
-            "tchinese",
-            "czech",
-            "danish",
-            "dutch",
-            "english",
-            "finnish",
-            "french",
-            "german",
-            "greek",
-            "hungarian",
-            "italian",
-            "japanese",
-            "koreana",
-            "norwegian",
-            "polish",
-            "portuguese",
-            "brazilian",
-            "romanian",
-            "russian",
-            "spanish",
-            "latam",
-            "swedish",
-            "thai",
-            "turkish",
-            "ukrainian",
-            "vietnamese"
-        });
 
         /*private static readonly Lazy<CacheService> Lazy =
             new Lazy<CacheService>(() => new CacheService());
@@ -73,13 +48,18 @@ namespace auto_creamapi.Services
 
         public CacheService()
         {
-            Languages = _languages;
-            UpdateCache();
+            Languages = Misc.DefaultLanguages;
         }
+
+        /*public async void Initialize()
+        {
+            //Languages = _defaultLanguages;
+            await UpdateCache();
+        }*/
 
         public List<string> Languages { get; }
 
-        public void UpdateCache()
+        public async Task Initialize()
         {
             MyLogger.Log.Information("Updating cache...");
             var updateNeeded = DateTime.Now.Subtract(File.GetLastWriteTimeUtc(CachePath)).TotalDays >= 1;
@@ -89,20 +69,19 @@ namespace auto_creamapi.Services
                 MyLogger.Log.Information("Getting content from API...");
                 var client = new HttpClient();
                 var httpCall = client.GetAsync(SteamUri);
-                var response = httpCall.Result;
+                var response = await httpCall;
                 var readAsStringAsync = response.Content.ReadAsStringAsync();
-                var responseBody = readAsStringAsync.Result;
+                var responseBody = await readAsStringAsync;
                 MyLogger.Log.Information("Got content from API successfully. Writing to file...");
 
-                //var writeAllTextAsync = File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
-                //writeAllTextAsync.RunSynchronously();
-                File.WriteAllText(CachePath, responseBody, Encoding.UTF8);
+                await File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
                 cacheString = responseBody;
                 MyLogger.Log.Information("Cache written to file successfully.");
             }
             else
             {
                 MyLogger.Log.Information("Cache already up to date!");
+                // ReSharper disable once MethodHasAsyncOverload
                 cacheString = File.ReadAllText(CachePath);
             }
 
@@ -122,7 +101,9 @@ namespace auto_creamapi.Services
         public SteamApp GetAppByName(string name)
         {
             MyLogger.Log.Information($"Trying to get app {name}");
-            var app = _cache.Find(x => x.Name.ToLower().Equals(name.ToLower()));
+            var app = _cache.Find(x =>
+                Regex.Replace(x.Name, SpecialCharsRegex, "").ToLower()
+                    .Equals(Regex.Replace(name, SpecialCharsRegex, "").ToLower()));
             if (app != null) MyLogger.Log.Information($"Successfully got app {app}");
             return app;
         }
@@ -194,10 +175,7 @@ namespace auto_creamapi.Services
                             var dlcId = element.GetAttribute("data-appid");
                             var dlcName = $"Unknown DLC {dlcId}";
                             var query3 = element.QuerySelectorAll("td");
-                            if (query3 != null)
-                            {
-                                dlcName = query3[1].Text().Replace("\n", "").Trim();
-                            }
+                            if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
 
                             var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
                             var i = dlcList.FindIndex(x => x.CompareId(dlcApp));
@@ -222,7 +200,7 @@ namespace auto_creamapi.Services
             }
             else
             {
-                MyLogger.Log.Error($"Could not get DLC: Invalid Steam App");
+                MyLogger.Log.Error("Could not get DLC: Invalid Steam App");
             }
 
             return dlcList;

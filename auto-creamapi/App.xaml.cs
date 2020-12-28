@@ -1,11 +1,10 @@
 ﻿using MvvmCross.Core;
 using MvvmCross.Platforms.Wpf.Core;
-using MvvmCross.Platforms.Wpf.Views;
 
 namespace auto_creamapi
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for App.xaml
     /// </summary>
     public partial class App
     {
