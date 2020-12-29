@@ -82,7 +82,7 @@
                                           Margin="10,10,10,0" Watermark="List of DLCs...&#xA;0000 = DLC Name"
                                           TextWrapping="Wrap" AcceptsReturn="True"
                                           VerticalScrollBarVisibility="Visible" Padding="0"
-                                          FontFamily="./#Courier Prime" Grid.Row="2" />
+                                          FontFamily="../resources/#Courier Prime" Grid.Row="2" />
                     <Button Content="Get DLCs for AppID" Margin="0,10,10,10" Height="19.96" HorizontalAlignment="Right"
                             VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="3" />
                 </Grid>

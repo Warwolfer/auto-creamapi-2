@@ -34,7 +34,7 @@
     <Content Include="COPYING">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="CourierPrime-Regular.ttf">
+    <Content Include="resources\CourierPrime-Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
