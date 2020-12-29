@@ -162,7 +162,7 @@ namespace auto_creamapi.Services
         private void ResetConfigData()
         {
             Config.AppId = -1;
-            Config.Language = "";
+            Config.Language = Misc.DefaultLanguageSelection;
             Config.UnlockAll = false;
             Config.ExtraProtection = false;
             Config.ForceOffline = false;
@@ -191,21 +191,7 @@ namespace auto_creamapi.Services
 
         public override string ToString()
         {
-            var str = $"INI file: {_configFilePath}, " +
-                      $"AppID: {Config.AppId}, " +
-                      $"Language: {Config.Language}, " +
-                      $"UnlockAll: {Config.UnlockAll}, " +
-                      $"ExtraProtection: {Config.ExtraProtection}, " +
-                      $"ForceOffline: {Config.ForceOffline}, " +
-                      $"DLC ({Config.DlcList.Count}):\n[\n";
-            if (Config.DlcList.Count > 0)
-                str = Config.DlcList.Aggregate(str, (current, x) => current + $"  {x.AppId}={x.Name},\n");
-            /*foreach (var (key, value) in Config.DlcList)
-                {
-                    str += $"  {key}={value},\n";
-                }*/
-
-            str += "]";
+            var str = $"INI file: {_configFilePath}\n{Config}";
 
             return str;
         }

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace auto_creamapi.Utils
 {
     public class Misc
     {
-        public static readonly List<string> DefaultLanguages = new List<string>(new[]
+        
+        public const string DefaultLanguageSelection = "english";
+        public static readonly ObservableCollection<string> DefaultLanguages = new ObservableCollection<string>(new[]
         {
             "arabic",
             "bulgarian",

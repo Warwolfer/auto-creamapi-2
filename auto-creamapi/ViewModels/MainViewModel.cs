@@ -16,7 +16,6 @@ namespace auto_creamapi.ViewModels
 {
     public class MainViewModel : MvxViewModel
     {
-        private const string DefaultLanguageSelection = "english";
         private readonly ICacheService _cache;
         private readonly ICreamConfigService _config;
 
@@ -49,6 +48,21 @@ namespace auto_creamapi.ViewModels
             _config = config;
             _dll = dll;
             //_download = download;
+        }
+
+        public override async Task Initialize()
+        {
+            _config.Initialize();
+            var tasks = new List<Task> {base.Initialize(), _cache.Initialize()};
+            if (!File.Exists("steam_api.dll") | !File.Exists("steam_api64.dll"))
+                tasks.Add(_navigationService.Navigate<DownloadViewModel>());
+            tasks.Add(_dll.Initialize());
+            await Task.WhenAll(tasks);
+            Languages = new ObservableCollection<string>(Misc.DefaultLanguages);
+            ResetForm();
+            UseSteamDb = true;
+            MainWindowEnabled = true;
+            Status = "Ready.";
         }
 
         // // COMMANDS // //
@@ -105,7 +119,7 @@ namespace auto_creamapi.ViewModels
             {
                 _appId = value;
                 RaisePropertyChanged(() => AppId);
-                if (value > 0) SetNameById();
+                SetNameById();
             }
         }
 
@@ -208,27 +222,6 @@ namespace auto_creamapi.ViewModels
                 _languages = value;
                 RaisePropertyChanged(() => Languages);
             }
-        }
-
-        public override async Task Initialize()
-        {
-            _config.Initialize();
-            /*await base.Initialize();
-            await _cache.Initialize();
-            if (!File.Exists("steam_api.dll") | !File.Exists("steam_api64.dll"))
-                await _navigationService.Navigate<DownloadViewModel>();
-            await _dll.Initialize();*/
-            var tasks = new List<Task> {base.Initialize(), _cache.Initialize()};
-            if (!File.Exists("steam_api.dll") | !File.Exists("steam_api64.dll"))
-                tasks.Add(_navigationService.Navigate<DownloadViewModel>());
-            tasks.Add(_dll.Initialize());
-            await Task.WhenAll(tasks);
-            Languages = new ObservableCollection<string>(_cache.Languages);
-            ResetForm();
-            Lang = DefaultLanguageSelection;
-            UseSteamDb = true;
-            MainWindowEnabled = true;
-            Status = "Ready.";
         }
 
         private void OpenFile()
@@ -380,8 +373,12 @@ namespace auto_creamapi.ViewModels
 
         private void SetNameById()
         {
-            var appById = _cache.GetAppById(_appId);
-            GameName = appById != null ? appById.Name : "";
+            if (_appId > 0)
+            {
+                var appById = _cache.GetAppById(_appId);
+                GameName = appById != null ? appById.Name : "";
+            }
+            else GameName = "";
         }
     }
 }

@@ -17,8 +17,6 @@ namespace auto_creamapi.Services
 {
     public interface ICacheService
     {
-        public List<string> Languages { get; }
-
         public Task Initialize();
 
         //public Task UpdateCache();
@@ -48,7 +46,6 @@ namespace auto_creamapi.Services
 
         public CacheService()
         {
-            Languages = Misc.DefaultLanguages;
         }
 
         /*public async void Initialize()
@@ -56,8 +53,6 @@ namespace auto_creamapi.Services
             //Languages = _defaultLanguages;
             await UpdateCache();
         }*/
-
-        public List<string> Languages { get; }
 
         public async Task Initialize()
         {
