@@ -1,9 +1,7 @@
 # Auto-CreamAPI 2
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H4330U3)
 
 Set your game automatically up for use with CreamAPI.
-
-[![](https://jeddunk.xyz/jetbrains-small.png)](https://www.jetbrains.com/?from=Auto-CreamAPI)  
-[Made with software provided by JetBrains s.r.o.](https://www.jetbrains.com/?from=Auto-CreamAPI)
 
 ## Features
 * Setup CreamAPI’s DLLs and configuration file automatically.
@@ -12,11 +10,9 @@ Set your game automatically up for use with CreamAPI.
 * Set flags like "offline mode" and "extra protection" and select a language from a list.
 
 ## Installation
-
 Download the latest release and extract it into any folder (e.g. `%USERPROFILE%\Desktop\auto-creamapi`).
 
 ## Usage
-
 * Double-click `auto-creamapi.exe` to open the application. (When starting it for the first time, it might take a few
  seconds since it needs to cache a list of games available on the Steam Store and download the latest CreamAPI DLL files.)
 * Click on the *Open File* button on the top right and select the *steam_api.dll* or *steam_api64.dll* 
@@ -29,9 +25,13 @@ Download the latest release and extract it into any folder (e.g. `%USERPROFILE%\
 * Click on *"Save"*.
 
 ## License
-
 Auto-CreamAPI itself is licensed under the GNU General Public License v3.0
 
-CreamAPI © 2016-2019, deadmau5. All Rights Reserved.
+CreamAPI © 2016-2020, deadmau5. All Rights Reserved.
 
 *Dependencies will be listed ASAP.*
+
+## Software used
+
+[![](https://jeddunk.xyz/jetbrains-small.png)](https://www.jetbrains.com/?from=Auto-CreamAPI)  
+[Made with software provided by JetBrains s.r.o.](https://www.jetbrains.com/?from=Auto-CreamAPI)
