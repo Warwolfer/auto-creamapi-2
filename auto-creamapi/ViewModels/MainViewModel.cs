@@ -67,7 +67,7 @@ namespace auto_creamapi.ViewModels
 
         // // COMMANDS // //
 
-        public IMvxCommand OpenFileCommand => new MvxCommand(OpenFile);
+        public IMvxCommand OpenFileCommand => new MvxAsyncCommand(OpenFile);
 
         public IMvxCommand SearchCommand => new MvxAsyncCommand(async () => await Search()); //Command(Search);
 
@@ -224,7 +224,7 @@ namespace auto_creamapi.ViewModels
             }
         }
 
-        private void OpenFile()
+        private async Task OpenFile()
         {
             Status = "Waiting for file...";
             var dialog = new OpenFileDialog
@@ -245,7 +245,17 @@ namespace auto_creamapi.ViewModels
                     ResetForm();
                     _dll.TargetPath = dirPath;
                     _dll.CheckIfDllExistsAtTarget();
-                    CheckExistence();
+                    CheckSetupStatus();
+                    if (!ConfigExists)
+                    {
+                        var separator = Path.DirectorySeparatorChar;
+                        var strings = new List<string>(dirPath.Split(separator));
+                        var index = strings.Contains("common") ? strings.FindIndex(x => x.Equals("common")) + 1 : -1;
+                        if (index == -1) index = strings.Contains("steamapps") ? strings.FindIndex(x => x.Equals("steamapps")) + 2 : -1;
+                        var s = index > -1 ? strings[index] : null;
+                        if (s != null) GameName = s;
+                        await Search();
+                    }
                     Status = "Ready.";
                 }
             }
@@ -326,7 +336,7 @@ namespace auto_creamapi.ViewModels
             );
             _config.SaveFile();
             _dll.Save();
-            CheckExistence();
+            CheckSetupStatus();
             Status = "Saving successful.";
         }
 
@@ -365,7 +375,7 @@ namespace auto_creamapi.ViewModels
             }
         }
 
-        private void CheckExistence()
+        private void CheckSetupStatus()
         {
             DllApplied = _dll.CreamApiApplied();
             ConfigExists = _config.ConfigExists();
