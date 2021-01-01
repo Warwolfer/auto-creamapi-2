@@ -1,23 +1,35 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using auto_creamapi.Utils;
 
 namespace auto_creamapi.Models
 {
     public class SteamApp
     {
+        private string _name;
+        private string _comparableName;
         [JsonPropertyName("appid")] public int AppId { get; set; }
 
-        [JsonPropertyName("name")] public string Name { get; set; }
+        [JsonPropertyName("name")]
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                _comparableName = Regex.Replace(value, Misc.SpecialCharsRegex, "").ToLower();
+            }
+        }
+
+        public bool CompareName(string value)
+        {
+            return _comparableName.Equals(value);
+        }
 
         public override string ToString()
         {
-            //return $"AppId: {AppId}, Name: {Name}";
             return $"{AppId}={Name}";
-        }
-
-        public bool CompareId(SteamApp steamApp)
-        {
-            return AppId.Equals(steamApp.AppId);
         }
     }
 

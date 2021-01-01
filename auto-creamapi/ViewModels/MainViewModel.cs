@@ -26,7 +26,7 @@ namespace auto_creamapi.ViewModels
         private ObservableCollection<SteamApp> _dlcs;
         private bool _dllApplied;
         private string _dllPath;
-        private bool _extraprotection;
+        private bool _extraProtection;
         private string _gameName;
         private string _lang;
         private ObservableCollection<string> _languages;
@@ -35,7 +35,7 @@ namespace auto_creamapi.ViewModels
         private bool _mainWindowEnabled;
         private bool _offline;
         private string _status;
-        private bool _unlockall;
+        private bool _unlockAll;
 
         private bool _useSteamDb;
         //private const string DlcRegexPattern = @"(?<id>.*) *= *(?<name>.*)";
@@ -144,23 +144,23 @@ namespace auto_creamapi.ViewModels
             }
         }
 
-        public bool Extraprotection
+        public bool ExtraProtection
         {
-            get => _extraprotection;
+            get => _extraProtection;
             set
             {
-                _extraprotection = value;
-                RaisePropertyChanged(() => Extraprotection);
+                _extraProtection = value;
+                RaisePropertyChanged(() => ExtraProtection);
             }
         }
 
-        public bool Unlockall
+        public bool UnlockAll
         {
-            get => _unlockall;
+            get => _unlockAll;
             set
             {
-                _unlockall = value;
-                RaisePropertyChanged(() => Unlockall);
+                _unlockAll = value;
+                RaisePropertyChanged(() => UnlockAll);
             }
         }
 
@@ -319,8 +319,8 @@ namespace auto_creamapi.ViewModels
             _config.SetConfigData(
                 AppId,
                 Lang,
-                Unlockall,
-                Extraprotection,
+                UnlockAll,
+                ExtraProtection,
                 Offline,
                 Dlcs
             );
@@ -334,8 +334,8 @@ namespace auto_creamapi.ViewModels
         {
             AppId = _config.Config.AppId;
             Lang = _config.Config.Language;
-            Unlockall = _config.Config.UnlockAll;
-            Extraprotection = _config.Config.ExtraProtection;
+            UnlockAll = _config.Config.UnlockAll;
+            ExtraProtection = _config.Config.ExtraProtection;
             Offline = _config.Config.ForceOffline;
             Dlcs = new ObservableCollection<SteamApp>(_config.Config.DlcList);
             Status = "Changes have been reset.";

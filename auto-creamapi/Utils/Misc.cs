@@ -5,7 +5,7 @@ namespace auto_creamapi.Utils
 {
     public class Misc
     {
-        
+        public const string SpecialCharsRegex = "[^0-9a-zA-Z]+";
         public const string DefaultLanguageSelection = "english";
         public static readonly ObservableCollection<string> DefaultLanguages = new ObservableCollection<string>(new[]
         {

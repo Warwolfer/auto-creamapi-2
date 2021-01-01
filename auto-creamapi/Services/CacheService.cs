@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -35,24 +36,7 @@ namespace auto_creamapi.Services
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/87.0.4280.88 Safari/537.36";
 
-        private const string SpecialCharsRegex = "[^0-9a-zA-Z]+";
-
-        private List<SteamApp> _cache = new List<SteamApp>();
-
-        /*private static readonly Lazy<CacheService> Lazy =
-            new Lazy<CacheService>(() => new CacheService());
-
-        public static CacheService Instance => Lazy.Value;*/
-
-        public CacheService()
-        {
-        }
-
-        /*public async void Initialize()
-        {
-            //Languages = _defaultLanguages;
-            await UpdateCache();
-        }*/
+        private HashSet<SteamApp> _cache = new HashSet<SteamApp>();
 
         public async Task Initialize()
         {
@@ -81,7 +65,7 @@ namespace auto_creamapi.Services
             }
 
             var steamApps = JsonSerializer.Deserialize<SteamApps>(cacheString);
-            _cache = steamApps.AppList.Apps;
+            _cache = new HashSet<SteamApp>(steamApps.AppList.Apps);
             MyLogger.Log.Information("Loaded cache into memory!");
         }
 
@@ -96,9 +80,8 @@ namespace auto_creamapi.Services
         public SteamApp GetAppByName(string name)
         {
             MyLogger.Log.Information($"Trying to get app {name}");
-            var app = _cache.Find(x =>
-                Regex.Replace(x.Name, SpecialCharsRegex, "").ToLower()
-                    .Equals(Regex.Replace(name, SpecialCharsRegex, "").ToLower()));
+            var comparableName = Regex.Replace(name, Misc.SpecialCharsRegex, "").ToLower();
+            var app = _cache.FirstOrDefault(x => x.CompareName(comparableName));
             if (app != null) MyLogger.Log.Information($"Successfully got app {app}");
             return app;
         }
@@ -106,7 +89,7 @@ namespace auto_creamapi.Services
         public SteamApp GetAppById(int appid)
         {
             MyLogger.Log.Information($"Trying to get app with ID {appid}");
-            var app = _cache.Find(x => x.AppId.Equals(appid));
+            var app = _cache.FirstOrDefault(x => x.AppId.Equals(appid));
             if (app != null) MyLogger.Log.Information($"Successfully got app {app}");
             return app;
         }
@@ -121,7 +104,7 @@ namespace auto_creamapi.Services
                 var steamAppDetails = await task;
                 steamAppDetails?.DLC.ForEach(x =>
                 {
-                    var result = _cache.Find(y => y.AppId.Equals(x)) ??
+                    var result = _cache.FirstOrDefault(y => y.AppId.Equals(x)) ??
                                  new SteamApp {AppId = x, Name = $"Unknown DLC {x}"};
                     dlcList.Add(result);
                 });
@@ -173,7 +156,7 @@ namespace auto_creamapi.Services
                             if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
 
                             var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
-                            var i = dlcList.FindIndex(x => x.CompareId(dlcApp));
+                            var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
                             if (i > -1)
                             {
                                 if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
@@ -189,7 +172,7 @@ namespace auto_creamapi.Services
                     }
                     else
                     {
-                        MyLogger.Log.Error("Could not get DLC from SteamDB1");
+                        MyLogger.Log.Error("Could not get DLC from SteamDB!");
                     }
                 }
             }
