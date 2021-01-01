@@ -71,7 +71,8 @@ namespace auto_creamapi.ViewModels
             var filename = await download;
             /*var extract = _download.Extract(filename);
             await extract;*/
-            await Task.Run(() => _download.Extract(filename));
+            var extract = Task.Run(() => _download.Extract(filename));
+            await extract.ConfigureAwait(false);
             _token.Dispose();
             await _navigationService.Close(this);
         }

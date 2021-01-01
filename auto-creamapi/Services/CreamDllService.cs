@@ -15,6 +15,7 @@ namespace auto_creamapi.Services
         public void Save();
         public void CheckIfDllExistsAtTarget();
         public bool CreamApiApplied();
+        public bool CreamApiApplied(string arch);
     }
 
     public class CreamDllService : ICreamDllService
@@ -23,7 +24,7 @@ namespace auto_creamapi.Services
         private const string X64Arch = "x64";
         private static readonly string HashPath = Path.Combine(Directory.GetCurrentDirectory(), "cream_api.md5");
 
-        private readonly Dictionary<string, CreamDll> _creamDlls = new Dictionary<string, CreamDll>();
+        private Dictionary<string, CreamDll> _creamDlls;
         private bool _x64Exists;
 
         private bool _x86Exists;
@@ -33,9 +34,11 @@ namespace auto_creamapi.Services
         public async Task Initialize()
         {
             MyLogger.Log.Debug("CreamDllService: Initialize begin");
-
-            _creamDlls.Add(X86Arch, new CreamDll("steam_api.dll", "steam_api_o.dll"));
-            _creamDlls.Add(X64Arch, new CreamDll("steam_api64.dll", "steam_api64_o.dll"));
+            _creamDlls = new Dictionary<string, CreamDll>
+            {
+                {X86Arch, new CreamDll("steam_api.dll", "steam_api_o.dll")},
+                {X64Arch, new CreamDll("steam_api64.dll", "steam_api64_o.dll")}
+            };
 
             if (!File.Exists(HashPath))
             {
@@ -45,7 +48,7 @@ namespace auto_creamapi.Services
                     {
                         $"{_creamDlls[X86Arch].Hash}  {_creamDlls[X86Arch].Filename}",
                         $"{_creamDlls[X64Arch].Hash}  {_creamDlls[X64Arch].Filename}"
-                    });
+                    }).ConfigureAwait(false);
             }
 
             MyLogger.Log.Debug("CreamDllService: Initialize end");
@@ -59,12 +62,12 @@ namespace auto_creamapi.Services
 
         public void CheckIfDllExistsAtTarget()
         {
-            var x86file = Path.Combine(TargetPath, "steam_api.dll");
-            var x64file = Path.Combine(TargetPath, "steam_api64.dll");
-            _x86Exists = File.Exists(x86file);
-            _x64Exists = File.Exists(x64file);
-            if (_x86Exists) MyLogger.Log.Information($"x86 SteamAPI DLL found: {x86file}");
-            if (_x64Exists) MyLogger.Log.Information($"x64 SteamAPI DLL found: {x64file}");
+            var x86File = Path.Combine(TargetPath, "steam_api.dll");
+            var x64File = Path.Combine(TargetPath, "steam_api64.dll");
+            _x86Exists = File.Exists(x86File);
+            _x64Exists = File.Exists(x64File);
+            if (_x86Exists) MyLogger.Log.Information($"x86 SteamAPI DLL found: {x86File}");
+            if (_x64Exists) MyLogger.Log.Information($"x64 SteamAPI DLL found: {x64File}");
         }
 
         public bool CreamApiApplied()
@@ -98,7 +101,7 @@ namespace auto_creamapi.Services
             return a & b;
         }
 
-        private string GetHash(string filename)
+        private static string GetHash(string filename)
         {
             if (File.Exists(filename))
             {

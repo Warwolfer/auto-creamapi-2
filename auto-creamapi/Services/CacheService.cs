@@ -64,7 +64,7 @@ namespace auto_creamapi.Services
                 MyLogger.Log.Information("Getting content from API...");
                 var client = new HttpClient();
                 var httpCall = client.GetAsync(SteamUri);
-                var response = await httpCall;
+                var response = await httpCall.ConfigureAwait(false);
                 var readAsStringAsync = response.Content.ReadAsStringAsync();
                 var responseBody = await readAsStringAsync;
                 MyLogger.Log.Information("Got content from API successfully. Writing to file...");
