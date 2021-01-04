@@ -255,6 +255,7 @@ namespace auto_creamapi.ViewModels
                         var s = index > -1 ? strings[index] : null;
                         if (s != null) GameName = s;
                         await Search();
+                        await GetListOfDlc();
                     }
                     Status = "Ready.";
                 }
@@ -277,6 +278,7 @@ namespace auto_creamapi.ViewModels
                 }
                 else
                 {
+                    MainWindowEnabled = false;
                     var navigate = _navigationService.Navigate<SearchResultViewModel, IEnumerable<SteamApp>, SteamApp>(
                         _cache.GetListOfAppsByName(GameName));
                     await navigate;
@@ -287,11 +289,13 @@ namespace auto_creamapi.ViewModels
                         AppId = navigateResult.AppId;
                     }
                 }
+                await GetListOfDlc();
             }
             else
             {
                 MyLogger.Log.Warning("Empty game name, cannot initiate search!");
             }
+            MainWindowEnabled = true;
         }
 
         private async Task GetListOfDlc()
