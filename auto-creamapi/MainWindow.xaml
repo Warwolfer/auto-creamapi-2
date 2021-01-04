@@ -6,6 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     mc:Ignorable="d"
-    Title="Auto-CreamAPI 2" MinWidth="420" MinHeight="600" Width="420" Height="600">
+    Title="Auto-CreamAPI 2" MinWidth="420" MinHeight="640" Width="560" Height="720">
     <Grid />
 </views:MvxWindow>

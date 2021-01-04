@@ -76,6 +76,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -85,6 +86,9 @@
                     <CheckBox Content="Additionally use SteamDB for DLCs"
                               IsChecked="{Binding UseSteamDb, Mode=TwoWay}" HorizontalAlignment="Left"
                               Margin="10,10,0,0" VerticalAlignment="Top" Grid.Row="1" />
+                    <CheckBox Content="Ignore unknown DLC from SteamDB" IsEnabled="{Binding UseSteamDb}"
+                              IsChecked="{Binding IgnoreUnknown, Mode=TwoWay}" HorizontalAlignment="Left"
+                              Margin="10,10,0,0" VerticalAlignment="Top" Grid.Row="2" />
                     <!-- Text="{Binding Dlcs, Converter={StaticResource DlcConv}, Mode=TwoWay}"-->
                     <!-- Text="{Binding DlcsString, Mode=TwoWay}"-->
                     <wcl:WatermarkTextBox
@@ -92,9 +96,9 @@
                         Margin="10,10,10,0" Watermark="List of DLCs...&#xA;0000 = DLC Name"
                         TextWrapping="Wrap" AcceptsReturn="True"
                         VerticalScrollBarVisibility="Visible" Padding="0"
-                        FontFamily="../resources/#Courier Prime" Grid.Row="2" />
+                        FontFamily="../resources/#Courier Prime" Grid.Row="3" />
                     <Button Content="Get DLCs for AppID" Margin="0,10,10,10" Height="19.96" HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="3" />
+                            VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="4" />
                 </Grid>
             </GroupBox>
             <GroupBox Header="Status" Grid.Row="1" VerticalAlignment="Bottom" IsEnabled="False">

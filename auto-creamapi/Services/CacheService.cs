@@ -24,7 +24,7 @@ namespace auto_creamapi.Services
         public IEnumerable<SteamApp> GetListOfAppsByName(string name);
         public SteamApp GetAppByName(string name);
         public SteamApp GetAppById(int appid);
-        public Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb);
+        public Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb, bool ignoreUnknown);
     }
 
     public class CacheService : ICacheService
@@ -99,7 +99,7 @@ namespace auto_creamapi.Services
             return app;
         }
 
-        public async Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb)
+        public async Task<List<SteamApp>> GetListOfDlc(SteamApp steamApp, bool useSteamDb, bool ignoreUnknown)
         {
             MyLogger.Log.Information("Get DLC");
             var dlcList = new List<SteamApp>();
@@ -164,15 +164,22 @@ namespace auto_creamapi.Services
                                     var query3 = element.QuerySelectorAll("td");
                                     if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
 
-                                    var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
-                                    var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
-                                    if (i > -1)
+                                    if (ignoreUnknown && dlcName.Contains("SteamDB Unknown App"))
                                     {
-                                        if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
+                                        MyLogger.Log.Information($"Skipping SteamDB Unknown App {dlcId}");
                                     }
                                     else
                                     {
-                                        dlcList.Add(dlcApp);
+                                        var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
+                                        var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
+                                        if (i > -1)
+                                        {
+                                            if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
+                                        }
+                                        else
+                                        {
+                                            dlcList.Add(dlcApp);
+                                        }
                                     }
                                 }
 
