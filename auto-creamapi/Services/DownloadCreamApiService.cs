@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using auto_creamapi.Messenger;
 using auto_creamapi.Utils;
 using HttpProgress;
 using MvvmCross.Plugin.Messenger;
-using SharpCompress.Archives;
-using SharpCompress.Common;
-using SharpCompress.Readers;
+using SevenZip;
 
 namespace auto_creamapi.Services
 {
@@ -21,7 +20,7 @@ namespace auto_creamapi.Services
         /*public void Initialize();
         public Task InitializeAsync();*/
         public Task<string> Download(string username, string password);
-        public void Extract(string filename);
+        public Task Extract(string filename);
     }
 
     public class DownloadCreamApiService : IDownloadCreamApiService
@@ -100,26 +99,30 @@ namespace auto_creamapi.Services
             return filename;
         }
 
-        public void Extract(string filename)
+        public async Task Extract(string filename)
         {
             MyLogger.Log.Debug("Extract");
+            var cwd = Directory.GetCurrentDirectory();
+            const string nonlogBuild = "nonlog_build";
+            const string steamApi64Dll = "steam_api64.dll";
+            const string steamApiDll = "steam_api.dll";
             MyLogger.Log.Information($@"Start extraction of ""{filename}""...");
-            var options = new ReaderOptions {Password = ArchivePassword};
-            var archive = ArchiveFactory.Open(filename, options);
             var expression1 = new Regex(@"nonlog_build\\steam_api(?:64)?\.dll");
             _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
-            foreach (var entry in archive.Entries)
-                // ReSharper disable once InvertIf
-                if (!entry.IsDirectory && expression1.IsMatch(entry.Key))
-                {
-                    MyLogger.Log.Debug(entry.Key);
-                    entry.WriteToDirectory(Directory.GetCurrentDirectory(), new ExtractionOptions
-                    {
-                        ExtractFullPath = false,
-                        Overwrite = true
-                    });
-                }
-
+            SevenZipBase.SetLibraryPath(Path.Combine(cwd, "resources/7z.dll"));
+            using (var extractor =
+                new SevenZipExtractor(filename, ArchivePassword, InArchiveFormat.Rar)
+                    {PreserveDirectoryStructure = false})
+            {
+                await extractor.ExtractFilesAsync(cwd,
+                    $"{nonlogBuild}\\{steamApi64Dll}",
+                    $"{nonlogBuild}\\{steamApiDll}");
+            }
+            if (File.Exists(Path.Combine(cwd, nonlogBuild, steamApi64Dll)))
+              File.Move(Path.Combine(cwd, nonlogBuild, steamApi64Dll), Path.Combine(cwd, steamApi64Dll));
+            if (File.Exists(Path.Combine(cwd, nonlogBuild, steamApiDll)))
+                File.Move(Path.Combine(cwd, nonlogBuild, steamApiDll), Path.Combine(cwd, steamApiDll));
+            Directory.Delete(Path.Combine(cwd, nonlogBuild));
             MyLogger.Log.Information("Extraction done!");
         }
     }

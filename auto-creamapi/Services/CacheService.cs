@@ -45,17 +45,7 @@ namespace auto_creamapi.Services
             string cacheString;
             if (updateNeeded)
             {
-                MyLogger.Log.Information("Getting content from API...");
-                var client = new HttpClient();
-                var httpCall = client.GetAsync(SteamUri);
-                var response = await httpCall.ConfigureAwait(false);
-                var readAsStringAsync = response.Content.ReadAsStringAsync();
-                var responseBody = await readAsStringAsync;
-                MyLogger.Log.Information("Got content from API successfully. Writing to file...");
-
-                await File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
-                cacheString = responseBody;
-                MyLogger.Log.Information("Cache written to file successfully.");
+                cacheString = await UpdateCache().ConfigureAwait(false);
             }
             else
             {
@@ -63,10 +53,25 @@ namespace auto_creamapi.Services
                 // ReSharper disable once MethodHasAsyncOverload
                 cacheString = File.ReadAllText(CachePath);
             }
-
             var steamApps = JsonSerializer.Deserialize<SteamApps>(cacheString);
             _cache = new HashSet<SteamApp>(steamApps.AppList.Apps);
             MyLogger.Log.Information("Loaded cache into memory!");
+        }
+
+        private static async Task<string> UpdateCache()
+        {
+            MyLogger.Log.Information("Getting content from API...");
+            var client = new HttpClient();
+            var httpCall = client.GetAsync(SteamUri);
+            var response = await httpCall.ConfigureAwait(false);
+            var readAsStringAsync = response.Content.ReadAsStringAsync();
+            var responseBody = await readAsStringAsync;
+            MyLogger.Log.Information("Got content from API successfully. Writing to file...");
+
+            await File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
+            var cacheString = responseBody;
+            MyLogger.Log.Information("Cache written to file successfully.");
+            return cacheString;
         }
 
         public IEnumerable<SteamApp> GetListOfAppsByName(string name)
