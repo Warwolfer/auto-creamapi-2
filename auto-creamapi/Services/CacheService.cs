@@ -100,80 +100,94 @@ namespace auto_creamapi.Services
             var dlcList = new List<SteamApp>();
             if (steamApp != null)
             {
-                var task = AppDetails.GetAsync(steamApp.AppId);
-                var steamAppDetails = await task;
-                steamAppDetails?.DLC.ForEach(x =>
+                var steamAppDetails = await AppDetails.GetAsync(steamApp.AppId).ConfigureAwait(false);
+                if (steamAppDetails != null)
                 {
-                    var result = _cache.FirstOrDefault(y => y.AppId.Equals(x)) ??
-                                 new SteamApp {AppId = x, Name = $"Unknown DLC {x}"};
-                    dlcList.Add(result);
-                });
+                    MyLogger.Log.Debug($"Type for Steam App {steamApp.Name}: \"{steamAppDetails.Type}\"");
+                    if (steamAppDetails.Type == "game" | steamAppDetails.Type == "demo")
+                    {
+                        steamAppDetails?.DLC.ForEach(x =>
+                        {
+                            var result = _cache.FirstOrDefault(y => y.AppId.Equals(x)) ??
+                                         new SteamApp {AppId = x, Name = $"Unknown DLC {x}"};
+                            dlcList.Add(result);
+                        });
 
-                dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
-                MyLogger.Log.Information("Got DLC successfully...");
+                        dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
+                        MyLogger.Log.Information("Got DLC successfully...");
 
-                // Get DLC from SteamDB
-                // Get Cloudflare cookie
-                // Scrape and parse HTML page
-                // Add missing to DLC list
-                if (useSteamDb)
-                {
-                    var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
+                        // Get DLC from SteamDB
+                        // Get Cloudflare cookie
+                        // Scrape and parse HTML page
+                        // Add missing to DLC list
+                        if (useSteamDb)
+                        {
+                            var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
 
-                    /* var handler = new ClearanceHandler();
+                            /* var handler = new ClearanceHandler();
                 
                     var client = new HttpClient(handler);
     
                     var content = client.GetStringAsync(steamDbUri).Result;
                     MyLogger.Log.Debug(content); */
 
-                    var client = new HttpClient();
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                            var client = new HttpClient();
+                            client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
-                    MyLogger.Log.Information("Get SteamDB App");
-                    var httpCall = client.GetAsync(steamDbUri);
-                    var response = await httpCall;
-                    MyLogger.Log.Debug(httpCall.Status.ToString());
-                    MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
+                            MyLogger.Log.Information("Get SteamDB App");
+                            var httpCall = client.GetAsync(steamDbUri);
+                            var response = await httpCall;
+                            MyLogger.Log.Debug(httpCall.Status.ToString());
+                            MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
 
-                    var readAsStringAsync = response.Content.ReadAsStringAsync();
-                    var responseBody = await readAsStringAsync;
-                    MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
+                            var readAsStringAsync = response.Content.ReadAsStringAsync();
+                            var responseBody = await readAsStringAsync;
+                            MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
 
-                    var parser = new HtmlParser();
-                    var doc = parser.ParseDocument(responseBody);
-                    // Console.WriteLine(doc.DocumentElement.OuterHtml);
+                            var parser = new HtmlParser();
+                            var doc = parser.ParseDocument(responseBody);
+                            // Console.WriteLine(doc.DocumentElement.OuterHtml);
 
-                    var query1 = doc.QuerySelector("#dlc");
-                    if (query1 != null)
-                    {
-                        var query2 = query1.QuerySelectorAll(".app");
-                        foreach (var element in query2)
-                        {
-                            var dlcId = element.GetAttribute("data-appid");
-                            var dlcName = $"Unknown DLC {dlcId}";
-                            var query3 = element.QuerySelectorAll("td");
-                            if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
-
-                            var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
-                            var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
-                            if (i > -1)
+                            var query1 = doc.QuerySelector("#dlc");
+                            if (query1 != null)
                             {
-                                if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
+                                var query2 = query1.QuerySelectorAll(".app");
+                                foreach (var element in query2)
+                                {
+                                    var dlcId = element.GetAttribute("data-appid");
+                                    var dlcName = $"Unknown DLC {dlcId}";
+                                    var query3 = element.QuerySelectorAll("td");
+                                    if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
+
+                                    var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
+                                    var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
+                                    if (i > -1)
+                                    {
+                                        if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
+                                    }
+                                    else
+                                    {
+                                        dlcList.Add(dlcApp);
+                                    }
+                                }
+
+                                dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
+                                MyLogger.Log.Information("Got DLC from SteamDB successfully...");
                             }
                             else
                             {
-                                dlcList.Add(dlcApp);
+                                MyLogger.Log.Error("Could not get DLC from SteamDB!");
                             }
                         }
-
-                        dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
-                        MyLogger.Log.Information("Got DLC from SteamDB successfully...");
                     }
                     else
                     {
-                        MyLogger.Log.Error("Could not get DLC from SteamDB!");
+                        MyLogger.Log.Error("Could not get DLC: Steam App is not of type: \"Game\"");
                     }
+                }
+                else
+                {
+                    MyLogger.Log.Error("Could not get DLC...");
                 }
             }
             else
