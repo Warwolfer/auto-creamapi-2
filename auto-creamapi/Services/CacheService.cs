@@ -111,85 +111,83 @@ namespace auto_creamapi.Services
                     MyLogger.Log.Debug($"Type for Steam App {steamApp.Name}: \"{steamAppDetails.Type}\"");
                     if (steamAppDetails.Type == "game" | steamAppDetails.Type == "demo")
                     {
-                        steamAppDetails?.DLC.ForEach(x =>
+                        steamAppDetails.DLC.ForEach(x =>
                         {
-                            var result = _cache.FirstOrDefault(y => y.AppId.Equals(x)) ??
-                                         new SteamApp {AppId = x, Name = $"Unknown DLC {x}"};
+                            var result = _cache.FirstOrDefault(y => y.AppId.Equals(x));
+                            if (result == null)
+                            {
+                                var dlcDetails = AppDetails.GetAsync(x).Result;
+                                result = dlcDetails != null
+                                    ? new SteamApp { AppId = dlcDetails.SteamAppId, Name = dlcDetails.Name }
+                                    : new SteamApp { AppId = x, Name = $"Unknown DLC {x}" };
+                            }
+
                             dlcList.Add(result);
                         });
 
                         dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
                         MyLogger.Log.Information("Got DLC successfully...");
-
+                        
+                        if (!useSteamDb) return dlcList;
+                        
                         // Get DLC from SteamDB
                         // Get Cloudflare cookie
                         // Scrape and parse HTML page
                         // Add missing to DLC list
-                        if (useSteamDb)
+                        var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
+
+                        var client = new HttpClient();
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+
+                        MyLogger.Log.Information("Get SteamDB App");
+                        var httpCall = client.GetAsync(steamDbUri);
+                        var response = await httpCall;
+                        MyLogger.Log.Debug(httpCall.Status.ToString());
+                        MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
+
+                        var readAsStringAsync = response.Content.ReadAsStringAsync();
+                        var responseBody = await readAsStringAsync;
+                        MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
+
+                        var parser = new HtmlParser();
+                        var doc = parser.ParseDocument(responseBody);
+                        // Console.WriteLine(doc.DocumentElement.OuterHtml);
+
+                        var query1 = doc.QuerySelector("#dlc");
+                        if (query1 != null)
                         {
-                            var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
-
-                            /* var handler = new ClearanceHandler();
-                
-                    var client = new HttpClient(handler);
-    
-                    var content = client.GetStringAsync(steamDbUri).Result;
-                    MyLogger.Log.Debug(content); */
-
-                            var client = new HttpClient();
-                            client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
-
-                            MyLogger.Log.Information("Get SteamDB App");
-                            var httpCall = client.GetAsync(steamDbUri);
-                            var response = await httpCall;
-                            MyLogger.Log.Debug(httpCall.Status.ToString());
-                            MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
-
-                            var readAsStringAsync = response.Content.ReadAsStringAsync();
-                            var responseBody = await readAsStringAsync;
-                            MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
-
-                            var parser = new HtmlParser();
-                            var doc = parser.ParseDocument(responseBody);
-                            // Console.WriteLine(doc.DocumentElement.OuterHtml);
-
-                            var query1 = doc.QuerySelector("#dlc");
-                            if (query1 != null)
+                            var query2 = query1.QuerySelectorAll(".app");
+                            foreach (var element in query2)
                             {
-                                var query2 = query1.QuerySelectorAll(".app");
-                                foreach (var element in query2)
-                                {
-                                    var dlcId = element.GetAttribute("data-appid");
-                                    var dlcName = $"Unknown DLC {dlcId}";
-                                    var query3 = element.QuerySelectorAll("td");
-                                    if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
+                                var dlcId = element.GetAttribute("data-appid");
+                                var dlcName = $"Unknown DLC {dlcId}";
+                                var query3 = element.QuerySelectorAll("td");
+                                if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
 
-                                    if (ignoreUnknown && dlcName.Contains("SteamDB Unknown App"))
+                                if (ignoreUnknown && dlcName.Contains("SteamDB Unknown App"))
+                                {
+                                    MyLogger.Log.Information($"Skipping SteamDB Unknown App {dlcId}");
+                                }
+                                else
+                                {
+                                    var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
+                                    var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
+                                    if (i > -1)
                                     {
-                                        MyLogger.Log.Information($"Skipping SteamDB Unknown App {dlcId}");
+                                        if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
                                     }
                                     else
                                     {
-                                        var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
-                                        var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
-                                        if (i > -1)
-                                        {
-                                            if (dlcList[i].Name.Contains("Unknown DLC")) dlcList[i] = dlcApp;
-                                        }
-                                        else
-                                        {
-                                            dlcList.Add(dlcApp);
-                                        }
+                                        dlcList.Add(dlcApp);
                                     }
                                 }
-
-                                dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
-                                MyLogger.Log.Information("Got DLC from SteamDB successfully...");
                             }
-                            else
-                            {
-                                MyLogger.Log.Error("Could not get DLC from SteamDB!");
-                            }
+                            dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
+                            MyLogger.Log.Information("Got DLC from SteamDB successfully...");
+                        }
+                        else
+                        {
+                            MyLogger.Log.Error("Could not get DLC from SteamDB!");
                         }
                     }
                     else

@@ -10,7 +10,8 @@
     xmlns:vm="clr-namespace:auto_creamapi.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
     xmlns:converters="clr-namespace:auto_creamapi.Converters"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    d:DesignHeight="720" d:DesignWidth="560">
     <views:MvxWpfView.Resources>
         <converters:ListOfDLcToStringNativeConverter x:Key="DlcConv" />
     </views:MvxWpfView.Resources>
@@ -27,7 +28,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <wcl:WatermarkTextBox Text="{Binding DllPath}" Watermark="Path to game's steam_api(64).dll..."
-                              Margin="10,11,55,0" TextWrapping="NoWrap" VerticalAlignment="Top" Padding="0"
+                              Margin="10,10,55,0" TextWrapping="NoWrap" VerticalAlignment="Top" Padding="0"
                               Grid.Row="0" IsReadOnly="True" IsReadOnlyCaretVisible="True">
             <!--MouseDoubleClick="{Binding Path=OpenFileCommand}"-->
             <wcl:WatermarkTextBox.InputBindings>
@@ -95,7 +96,7 @@
                         Text="{Binding Dlcs, Converter={StaticResource DlcConv}, Mode=TwoWay}"
                         Margin="10,10,10,0" Watermark="List of DLCs...&#xA;0000 = DLC Name"
                         TextWrapping="Wrap" AcceptsReturn="True"
-                        VerticalScrollBarVisibility="Visible" Padding="0"
+                        VerticalScrollBarVisibility="Visible" Padding="5,5,5,5"
                         FontFamily="../resources/#Courier Prime" Grid.Row="3" />
                     <Button Content="Get DLCs for AppID" Margin="0,10,10,10" Height="19.96" HorizontalAlignment="Right"
                             VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="4" />
