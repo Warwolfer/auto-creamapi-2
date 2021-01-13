@@ -103,47 +103,39 @@ namespace auto_creamapi.Services
             const string steamApi64Dll = "steam_api64.dll";
             const string steamApiDll = "steam_api.dll";
             MyLogger.Log.Information($@"Start extraction of ""{filename}""...");
-            try
+            var nonlogBuildPath = Path.Combine(cwd, nonlogBuild);
+            if (Directory.Exists(nonlogBuildPath))
+                Directory.Delete(nonlogBuildPath, true);
+            _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
+            SevenZipBase.SetLibraryPath(Path.Combine(cwd, "resources/7z.dll"));
+            using (var extractor =
+                new SevenZipExtractor(filename, ArchivePassword, InArchiveFormat.Rar)
+                    {PreserveDirectoryStructure = false})
             {
-                var nonlogBuildPath = Path.Combine(cwd, nonlogBuild);
-                if (Directory.Exists(nonlogBuildPath))
-                    Directory.Delete(nonlogBuildPath, true);
-                _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
-                SevenZipBase.SetLibraryPath(Path.Combine(cwd, "resources/7z.dll"));
-                using (var extractor =
-                    new SevenZipExtractor(filename, ArchivePassword, InArchiveFormat.Rar)
-                        {PreserveDirectoryStructure = false})
-                {
-                    await extractor.ExtractFilesAsync(
-                        cwd,
-                        $@"{nonlogBuild}\{steamApi64Dll}",
-                        $@"{nonlogBuild}\{steamApiDll}"
-                    ).ConfigureAwait(false);
-                }
-
-                if (File.Exists(Path.Combine(nonlogBuildPath, steamApi64Dll)))
-                    File.Move(
-                        Path.Combine(cwd, nonlogBuild, steamApi64Dll),
-                        Path.Combine(cwd, steamApi64Dll),
-                        true
-                    );
-
-                if (File.Exists(Path.Combine(nonlogBuildPath, steamApiDll)))
-                    File.Move(
-                        Path.Combine(nonlogBuildPath, steamApiDll),
-                        Path.Combine(cwd, steamApiDll),
-                        true
-                    );
-
-                if (Directory.Exists(nonlogBuildPath))
-                    Directory.Delete(nonlogBuildPath, true);
-                MyLogger.Log.Information("Extraction done!");
+                await extractor.ExtractFilesAsync(
+                    cwd,
+                    $@"{nonlogBuild}\{steamApi64Dll}",
+                    $@"{nonlogBuild}\{steamApiDll}"
+                ).ConfigureAwait(false);
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+
+            if (File.Exists(Path.Combine(nonlogBuildPath, steamApi64Dll)))
+                File.Move(
+                    Path.Combine(cwd, nonlogBuild, steamApi64Dll),
+                    Path.Combine(cwd, steamApi64Dll),
+                    true
+                );
+
+            if (File.Exists(Path.Combine(nonlogBuildPath, steamApiDll)))
+                File.Move(
+                    Path.Combine(nonlogBuildPath, steamApiDll),
+                    Path.Combine(cwd, steamApiDll),
+                    true
+                );
+
+            if (Directory.Exists(nonlogBuildPath))
+                Directory.Delete(nonlogBuildPath, true);
+            MyLogger.Log.Information("Extraction done!");
         }
     }
 }
