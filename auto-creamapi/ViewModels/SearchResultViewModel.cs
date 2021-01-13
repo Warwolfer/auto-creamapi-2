@@ -67,7 +67,7 @@ namespace auto_creamapi.ViewModels
             if (Selected != null)
             {
                 MyLogger.Log.Information($"Successfully got app {Selected}");
-                await _navigationService.Close(this, Selected);
+                await _navigationService.Close(this, Selected).ConfigureAwait(false);
             }
         }
 

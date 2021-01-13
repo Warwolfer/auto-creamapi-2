@@ -52,14 +52,16 @@ namespace auto_creamapi.ViewModels
             //_download = download;
         }
 
-        public override async Task Initialize()
+        public override async void Prepare()
         {
+            base.Prepare();
             _config.Initialize();
-            var tasks = new List<Task> {base.Initialize(), _cache.Initialize()};
+            var tasks = new List<Task> {_cache.Initialize()};
             if (!File.Exists("steam_api.dll") | !File.Exists("steam_api64.dll"))
                 tasks.Add(_navigationService.Navigate<DownloadViewModel>());
+            //tasks.Add(_navigationService.Navigate<DownloadViewModel>());
             tasks.Add(_dll.Initialize());
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
             Languages = new ObservableCollection<string>(Misc.DefaultLanguages);
             ResetForm();
             UseSteamDb = true;
@@ -67,11 +69,16 @@ namespace auto_creamapi.ViewModels
             Status = "Ready.";
         }
 
+        public override Task Initialize()
+        {
+            return base.Initialize();
+        }
+
         // // COMMANDS // //
 
         public IMvxCommand OpenFileCommand => new MvxAsyncCommand(OpenFile);
 
-        public IMvxCommand SearchCommand => new MvxAsyncCommand(async () => await Search()); //Command(Search);
+        public IMvxCommand SearchCommand => new MvxAsyncCommand(async () => await Search().ConfigureAwait(false)); //Command(Search);
 
         public IMvxCommand GetListOfDlcCommand => new MvxAsyncCommand(GetListOfDlc);
 
@@ -110,7 +117,6 @@ namespace auto_creamapi.ViewModels
             {
                 _gameName = value;
                 RaisePropertyChanged(() => GameName);
-                //MyLogger.Log.Debug($"GameName: {value}");
             }
         }
 
@@ -132,7 +138,6 @@ namespace auto_creamapi.ViewModels
             {
                 _lang = value;
                 RaisePropertyChanged(() => Lang);
-                //MyLogger.Log.Debug($"Lang: {value}");
             }
         }
 
@@ -269,8 +274,8 @@ namespace auto_creamapi.ViewModels
                                 : -1;
                         var s = index > -1 ? strings[index] : null;
                         if (s != null) GameName = s;
-                        await Search();
-                        await GetListOfDlc();
+                        await Search().ConfigureAwait(false);
+                        await GetListOfDlc().ConfigureAwait(false);
                     }
 
                     Status = "Ready.";
@@ -297,7 +302,7 @@ namespace auto_creamapi.ViewModels
                     MainWindowEnabled = false;
                     var navigate = _navigationService.Navigate<SearchResultViewModel, IEnumerable<SteamApp>, SteamApp>(
                         _cache.GetListOfAppsByName(GameName));
-                    await navigate;
+                    await navigate.ConfigureAwait(false);
                     var navigateResult = navigate.Result;
                     if (navigateResult != null)
                     {
@@ -306,7 +311,7 @@ namespace auto_creamapi.ViewModels
                     }
                 }
 
-                await GetListOfDlc();
+                await GetListOfDlc().ConfigureAwait(false);
             }
             else
             {
@@ -324,7 +329,7 @@ namespace auto_creamapi.ViewModels
                 var app = new SteamApp {AppId = AppId, Name = GameName};
                 var task = _cache.GetListOfDlc(app, UseSteamDb, IgnoreUnknown);
                 MainWindowEnabled = false;
-                var listOfDlc = await task;
+                var listOfDlc = await task.ConfigureAwait(false);
                 if (task.IsCompletedSuccessfully)
                 {
                     listOfDlc.Sort((app1, app2) => app1.AppId.CompareTo(app2.AppId));

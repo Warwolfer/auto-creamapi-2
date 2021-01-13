@@ -9,6 +9,7 @@ using MvvmCross.ViewModels;
 
 namespace auto_creamapi.ViewModels
 {
+    
     public class DownloadViewModel : MvxNavigationViewModel
     {
         private readonly IDownloadCreamApiService _download;
@@ -63,18 +64,18 @@ namespace auto_creamapi.ViewModels
 
         public override async Task Initialize()
         {
-            await base.Initialize();
+            await base.Initialize().ConfigureAwait(false);
             InfoLabel = "Please wait...";
             FilenameLabel = "";
             Progress = 0.0;
             var download = _download.Download(Secrets.ForumUsername, Secrets.ForumPassword);
-            var filename = await download;
+            var filename = await download.ConfigureAwait(false);
             /*var extract = _download.Extract(filename);
             await extract;*/
             var extract = _download.Extract(filename);
             await extract.ConfigureAwait(false);
             _token.Dispose();
-            await _navigationService.Close(this);
+            await _navigationService.Close(this).ConfigureAwait(false);
         }
 
         private void OnProgressMessage(ProgressMessage obj)

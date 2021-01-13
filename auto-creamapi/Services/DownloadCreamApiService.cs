@@ -17,8 +17,6 @@ namespace auto_creamapi.Services
 {
     public interface IDownloadCreamApiService
     {
-        /*public void Initialize();
-        public Task InitializeAsync();*/
         public Task<string> Download(string username, string password);
         public Task Extract(string filename);
     }
@@ -26,10 +24,7 @@ namespace auto_creamapi.Services
     public class DownloadCreamApiService : IDownloadCreamApiService
     {
         private const string ArchivePassword = "cs.rin.ru";
-
-        //private string _filename;
         private readonly IMvxMessenger _messenger;
-        //private DownloadWindow _wnd;
 
         public DownloadCreamApiService(IMvxMessenger messenger)
         {
@@ -50,23 +45,25 @@ namespace auto_creamapi.Services
                 new KeyValuePair<string, string>("login", "login")
             });
             MyLogger.Log.Debug("Download: post login");
-            var response1 = await client.PostAsync("https://cs.rin.ru/forum/ucp.php?mode=login", formContent);
+            var response1 = await client.PostAsync("https://cs.rin.ru/forum/ucp.php?mode=login", formContent)
+                .ConfigureAwait(false);
             MyLogger.Log.Debug($"Login Status Code: {response1.EnsureSuccessStatusCode().StatusCode.ToString()}");
             var cookie = container.GetCookies(new Uri("https://cs.rin.ru/forum/ucp.php?mode=login"))
                 .FirstOrDefault(c => c.Name.Contains("_sid"));
             MyLogger.Log.Debug($"Login Cookie: {cookie}");
-            var response2 = await client.GetAsync("https://cs.rin.ru/forum/viewtopic.php?t=70576");
+            var response2 = await client.GetAsync("https://cs.rin.ru/forum/viewtopic.php?t=70576")
+                .ConfigureAwait(false);
             MyLogger.Log.Debug(
                 $"Download Page Status Code: {response2.EnsureSuccessStatusCode().StatusCode.ToString()}");
             var content = response2.Content.ReadAsStringAsync();
-            var contentResult = await content;
+            var contentResult = await content.ConfigureAwait(false);
 
             var expression =
                 new Regex(".*<a href=\"\\.(?<url>\\/download\\/file\\.php\\?id=.*)\">(?<filename>.*)<\\/a>.*");
             using var reader = new StringReader(contentResult);
             string line;
             var archiveFileList = new Dictionary<string, string>();
-            while ((line = await reader.ReadLineAsync()) != null)
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
             {
                 var match = expression.Match(line);
                 // ReSharper disable once InvertIf
@@ -80,7 +77,6 @@ namespace auto_creamapi.Services
 
             MyLogger.Log.Debug("Choosing first element from list...");
             var (filename, url) = archiveFileList.FirstOrDefault();
-            //filename = filename;
             if (File.Exists(filename))
             {
                 MyLogger.Log.Information($"{filename} already exists, skipping download...");
@@ -92,7 +88,7 @@ namespace auto_creamapi.Services
                 x => _messenger.Publish(new ProgressMessage(this, "Downloading...", filename, x)));
             await using var fileStream = File.OpenWrite(filename);
             var task = client.GetAsync(url, fileStream, progress);
-            var response = await task;
+            await task.ConfigureAwait(false);
             if (task.IsCompletedSuccessfully)
                 _messenger.Publish(new ProgressMessage(this, "Downloading...", filename, 1.0));
             MyLogger.Log.Information("Download done.");
@@ -107,23 +103,47 @@ namespace auto_creamapi.Services
             const string steamApi64Dll = "steam_api64.dll";
             const string steamApiDll = "steam_api.dll";
             MyLogger.Log.Information($@"Start extraction of ""{filename}""...");
-            var expression1 = new Regex(@"nonlog_build\\steam_api(?:64)?\.dll");
-            _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
-            SevenZipBase.SetLibraryPath(Path.Combine(cwd, "resources/7z.dll"));
-            using (var extractor =
-                new SevenZipExtractor(filename, ArchivePassword, InArchiveFormat.Rar)
-                    {PreserveDirectoryStructure = false})
+            try
             {
-                await extractor.ExtractFilesAsync(cwd,
-                    $"{nonlogBuild}\\{steamApi64Dll}",
-                    $"{nonlogBuild}\\{steamApiDll}");
+                var nonlogBuildPath = Path.Combine(cwd, nonlogBuild);
+                if (Directory.Exists(nonlogBuildPath))
+                    Directory.Delete(nonlogBuildPath, true);
+                _messenger.Publish(new ProgressMessage(this, "Extracting...", filename, 1.0));
+                SevenZipBase.SetLibraryPath(Path.Combine(cwd, "resources/7z.dll"));
+                using (var extractor =
+                    new SevenZipExtractor(filename, ArchivePassword, InArchiveFormat.Rar)
+                        {PreserveDirectoryStructure = false})
+                {
+                    await extractor.ExtractFilesAsync(
+                        cwd,
+                        $@"{nonlogBuild}\{steamApi64Dll}",
+                        $@"{nonlogBuild}\{steamApiDll}"
+                    ).ConfigureAwait(false);
+                }
+
+                if (File.Exists(Path.Combine(nonlogBuildPath, steamApi64Dll)))
+                    File.Move(
+                        Path.Combine(cwd, nonlogBuild, steamApi64Dll),
+                        Path.Combine(cwd, steamApi64Dll),
+                        true
+                    );
+
+                if (File.Exists(Path.Combine(nonlogBuildPath, steamApiDll)))
+                    File.Move(
+                        Path.Combine(nonlogBuildPath, steamApiDll),
+                        Path.Combine(cwd, steamApiDll),
+                        true
+                    );
+
+                if (Directory.Exists(nonlogBuildPath))
+                    Directory.Delete(nonlogBuildPath, true);
+                MyLogger.Log.Information("Extraction done!");
             }
-            if (File.Exists(Path.Combine(cwd, nonlogBuild, steamApi64Dll)))
-              File.Move(Path.Combine(cwd, nonlogBuild, steamApi64Dll), Path.Combine(cwd, steamApi64Dll));
-            if (File.Exists(Path.Combine(cwd, nonlogBuild, steamApiDll)))
-                File.Move(Path.Combine(cwd, nonlogBuild, steamApiDll), Path.Combine(cwd, steamApiDll));
-            Directory.Delete(Path.Combine(cwd, nonlogBuild));
-            MyLogger.Log.Information("Extraction done!");
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }

@@ -38,7 +38,7 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
-            ObservableCollection<SteamApp> dlcList);
+            IEnumerable<SteamApp> dlcList);
 
         public bool ConfigExists();
     }
@@ -47,7 +47,7 @@ namespace auto_creamapi.Services
     {
         private string _configFilePath;
 
-        public CreamConfig Config { get; set; }
+        public CreamConfig Config { get; private set; }
 
         public void Initialize()
         {
@@ -144,7 +144,7 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
-            ObservableCollection<SteamApp> dlcList)
+            IEnumerable<SteamApp> dlcList)
         {
             Config.AppId = appId;
             Config.Language = language;

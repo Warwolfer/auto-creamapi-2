@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -19,6 +20,7 @@ namespace auto_creamapi.Converters
         protected override string Convert(ObservableCollection<SteamApp> value, Type targetType, object parameter,
             CultureInfo culture)
         {
+            if (value == null) return "";
             MyLogger.Log.Debug("ListOfDLcToStringConverter: Convert");
             var dlcListToString = DlcListToString(value);
             return dlcListToString.GetType() == targetType ? dlcListToString : "";
@@ -52,7 +54,7 @@ namespace auto_creamapi.Converters
             return result;
         }
 
-        private static string DlcListToString(ObservableCollection<SteamApp> value)
+        private static string DlcListToString(IEnumerable<SteamApp> value)
         {
             var result = "";
             //value.ForEach(x => result += $"{x}\n");

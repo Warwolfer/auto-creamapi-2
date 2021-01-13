@@ -102,7 +102,7 @@
                             VerticalAlignment="Bottom" Width="108" Command="{Binding GetListOfDlcCommand}" Grid.Row="4" />
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Status" Grid.Row="1" VerticalAlignment="Bottom" IsEnabled="False">
+            <GroupBox Header="Status" Grid.Row="1" VerticalAlignment="Bottom" IsEnabled="False" Margin="0,10,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />

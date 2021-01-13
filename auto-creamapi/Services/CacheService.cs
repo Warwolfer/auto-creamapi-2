@@ -65,10 +65,10 @@ namespace auto_creamapi.Services
             var httpCall = client.GetAsync(SteamUri);
             var response = await httpCall.ConfigureAwait(false);
             var readAsStringAsync = response.Content.ReadAsStringAsync();
-            var responseBody = await readAsStringAsync;
+            var responseBody = await readAsStringAsync.ConfigureAwait(false);
             MyLogger.Log.Information("Got content from API successfully. Writing to file...");
 
-            await File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8);
+            await File.WriteAllTextAsync(CachePath, responseBody, Encoding.UTF8).ConfigureAwait(false);
             var cacheString = responseBody;
             MyLogger.Log.Information("Cache written to file successfully.");
             return cacheString;
@@ -141,12 +141,12 @@ namespace auto_creamapi.Services
 
                         MyLogger.Log.Information("Get SteamDB App");
                         var httpCall = client.GetAsync(steamDbUri);
-                        var response = await httpCall;
+                        var response = await httpCall.ConfigureAwait(false);
                         MyLogger.Log.Debug(httpCall.Status.ToString());
                         MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
 
                         var readAsStringAsync = response.Content.ReadAsStringAsync();
-                        var responseBody = await readAsStringAsync;
+                        var responseBody = await readAsStringAsync.ConfigureAwait(false);
                         MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
 
                         var parser = new HtmlParser();

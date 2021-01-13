@@ -103,16 +103,13 @@ namespace auto_creamapi.Services
 
         private static string GetHash(string filename)
         {
-            if (File.Exists(filename))
-            {
-                using var md5 = MD5.Create();
-                using var stream = File.OpenRead(filename);
-                return BitConverter
-                    .ToString(md5.ComputeHash(stream))
-                    .Replace("-", string.Empty);
-            }
+            if (!File.Exists(filename)) return "";
+            using var md5 = MD5.Create();
+            using var stream = File.OpenRead(filename);
+            return BitConverter
+                .ToString(md5.ComputeHash(stream))
+                .Replace("-", string.Empty);
 
-            return "";
         }
     }
 }
