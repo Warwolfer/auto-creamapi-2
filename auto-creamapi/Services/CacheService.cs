@@ -114,15 +114,11 @@ namespace auto_creamapi.Services
                         steamAppDetails.DLC.ForEach(x =>
                         {
                             var result = _cache.FirstOrDefault(y => y.AppId.Equals(x));
-                            if (result == null)
-                            {
-                                var dlcDetails = AppDetails.GetAsync(x).Result;
-                                result = dlcDetails != null
-                                    ? new SteamApp { AppId = dlcDetails.SteamAppId, Name = dlcDetails.Name }
-                                    : new SteamApp { AppId = x, Name = $"Unknown DLC {x}" };
-                            }
-
-                            dlcList.Add(result);
+                            if (result == null) return;
+                            var dlcDetails = AppDetails.GetAsync(x).Result;
+                            dlcList.Add(dlcDetails != null
+                                ? new SteamApp { AppId = dlcDetails.SteamAppId, Name = dlcDetails.Name }
+                                : new SteamApp { AppId = x, Name = $"Unknown DLC {x}" });
                         });
 
                         dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
@@ -160,9 +156,10 @@ namespace auto_creamapi.Services
                             foreach (var element in query2)
                             {
                                 var dlcId = element.GetAttribute("data-appid");
-                                var dlcName = $"Unknown DLC {dlcId}";
                                 var query3 = element.QuerySelectorAll("td");
-                                if (query3 != null) dlcName = query3[1].Text().Replace("\n", "").Trim();
+                                var dlcName = query3 == null
+                                    ? $"Unknown DLC {dlcId}"
+                                    : query3[1].Text().Replace("\n", "").Trim();
 
                                 if (ignoreUnknown && dlcName.Contains("SteamDB Unknown App"))
                                 {
