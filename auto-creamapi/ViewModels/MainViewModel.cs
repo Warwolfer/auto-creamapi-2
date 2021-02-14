@@ -270,7 +270,7 @@ namespace auto_creamapi.ViewModels
                         var s = index > -1 ? strings[index] : null;
                         if (s != null) GameName = s;
                         await Search().ConfigureAwait(false);
-                        await GetListOfDlc().ConfigureAwait(false);
+                        // await GetListOfDlc().ConfigureAwait(false);
                     }
 
                     Status = "Ready.";
@@ -306,7 +306,7 @@ namespace auto_creamapi.ViewModels
                     }
                 }
 
-                await GetListOfDlc().ConfigureAwait(false);
+                // await GetListOfDlc().ConfigureAwait(false);
             }
             else
             {
