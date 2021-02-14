@@ -69,11 +69,6 @@ namespace auto_creamapi.ViewModels
             Status = "Ready.";
         }
 
-        public override Task Initialize()
-        {
-            return base.Initialize();
-        }
-
         // // COMMANDS // //
 
         public IMvxCommand OpenFileCommand => new MvxAsyncCommand(OpenFile);
@@ -346,7 +341,7 @@ namespace auto_creamapi.ViewModels
             else
             {
                 Status = $"Could not get DLC for AppID {AppId}";
-                MyLogger.Log.Error($"GetListOfDlc: Invalid AppID {AppId}");
+                MyLogger.Log.Error("GetListOfDlc: Invalid AppID {AppId}", AppId);
             }
         }
 
@@ -397,7 +392,7 @@ namespace auto_creamapi.ViewModels
             }
             else
             {
-                MyLogger.Log.Error($"OpenURL: Invalid AppID {AppId}");
+                MyLogger.Log.Error("OpenURL: Invalid AppID {AppId}", AppId);
                 Status = $"Could not open URL: Invalid AppID {AppId}";
             }
         }

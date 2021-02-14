@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using auto_creamapi.Messenger;
@@ -37,6 +36,8 @@ namespace auto_creamapi.Services
             var container = new CookieContainer();
             var handler = new HttpClientHandler {CookieContainer = container};
             var client = new HttpClient(handler);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) " +
+                                                            "Gecko/20100101 Firefox/86.0");
             var formContent = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("username", username),
@@ -47,14 +48,15 @@ namespace auto_creamapi.Services
             MyLogger.Log.Debug("Download: post login");
             var response1 = await client.PostAsync("https://cs.rin.ru/forum/ucp.php?mode=login", formContent)
                 .ConfigureAwait(false);
-            MyLogger.Log.Debug($"Login Status Code: {response1.EnsureSuccessStatusCode().StatusCode.ToString()}");
+            MyLogger.Log.Debug("Login Status Code: {StatusCode}", 
+                response1.EnsureSuccessStatusCode().StatusCode);
             var cookie = container.GetCookies(new Uri("https://cs.rin.ru/forum/ucp.php?mode=login"))
                 .FirstOrDefault(c => c.Name.Contains("_sid"));
-            MyLogger.Log.Debug($"Login Cookie: {cookie}");
+            MyLogger.Log.Debug("Login Cookie: {Cookie}", cookie);
             var response2 = await client.GetAsync("https://cs.rin.ru/forum/viewtopic.php?t=70576")
                 .ConfigureAwait(false);
-            MyLogger.Log.Debug(
-                $"Download Page Status Code: {response2.EnsureSuccessStatusCode().StatusCode.ToString()}");
+            MyLogger.Log.Debug("Download Page Status Code: {StatusCode}", 
+                response2.EnsureSuccessStatusCode().StatusCode);
             var content = response2.Content.ReadAsStringAsync();
             var contentResult = await content.ConfigureAwait(false);
 
@@ -71,7 +73,7 @@ namespace auto_creamapi.Services
                 {
                     archiveFileList.Add(match.Groups["filename"].Value,
                         $"https://cs.rin.ru/forum{match.Groups["url"].Value}");
-                    MyLogger.Log.Debug(archiveFileList.LastOrDefault().Key);
+                    MyLogger.Log.Debug("{X}", archiveFileList.LastOrDefault().Key);
                 }
             }
 
@@ -79,7 +81,7 @@ namespace auto_creamapi.Services
             var (filename, url) = archiveFileList.FirstOrDefault();
             if (File.Exists(filename))
             {
-                MyLogger.Log.Information($"{filename} already exists, skipping download...");
+                MyLogger.Log.Information("{Filename} already exists, skipping download...", filename);
                 return filename;
             }
 
@@ -102,7 +104,7 @@ namespace auto_creamapi.Services
             const string nonlogBuild = "nonlog_build";
             const string steamApi64Dll = "steam_api64.dll";
             const string steamApiDll = "steam_api.dll";
-            MyLogger.Log.Information($@"Start extraction of ""{filename}""...");
+            MyLogger.Log.Information(@"Start extraction of ""{Filename}""...", filename);
             var nonlogBuildPath = Path.Combine(cwd, nonlogBuild);
             if (Directory.Exists(nonlogBuildPath))
                 Directory.Delete(nonlogBuildPath, true);

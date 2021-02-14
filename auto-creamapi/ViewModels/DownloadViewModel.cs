@@ -1,4 +1,7 @@
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Windows;
 using auto_creamapi.Messenger;
 using auto_creamapi.Services;
 using auto_creamapi.Utils;
@@ -26,7 +29,7 @@ namespace auto_creamapi.ViewModels
             _navigationService = navigationService;
             _download = download;
             _token = messenger.Subscribe<ProgressMessage>(OnProgressMessage);
-            MyLogger.Log.Debug(messenger.CountSubscriptionsFor<ProgressMessage>().ToString());
+            MyLogger.Log.Debug("{Count}", messenger.CountSubscriptionsFor<ProgressMessage>());
         }
 
         public string InfoLabel
@@ -62,20 +65,36 @@ namespace auto_creamapi.ViewModels
 
         public string ProgressPercent => _progress.ToString("P2");
 
-        public override async Task Initialize()
+        public override void Prepare()
         {
-            await base.Initialize().ConfigureAwait(false);
             InfoLabel = "Please wait...";
             FilenameLabel = "";
             Progress = 0.0;
-            var download = _download.Download(Secrets.ForumUsername, Secrets.ForumPassword);
-            var filename = await download.ConfigureAwait(false);
-            /*var extract = _download.Extract(filename);
-            await extract;*/
-            var extract = _download.Extract(filename);
-            await extract.ConfigureAwait(false);
-            _token.Dispose();
-            await _navigationService.Close(this).ConfigureAwait(false);
+        }
+
+        public override async Task Initialize()
+        {
+            try
+            {
+                await base.Initialize().ConfigureAwait(false);
+                var download = _download.Download(Secrets.ForumUsername, Secrets.ForumPassword);
+                var filename = await download.ConfigureAwait(false);
+                /*var extract = _download.Extract(filename);
+                await extract;*/
+                var extract = _download.Extract(filename);
+                await extract.ConfigureAwait(false);
+                _token.Dispose();
+                await _navigationService.Close(this).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Could not download CreamAPI!\nPlease add CreamAPI DLLs manually!\nShutting down...",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _token.Dispose();
+                await _navigationService.Close(this).ConfigureAwait(false);
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private void OnProgressMessage(ProgressMessage obj)

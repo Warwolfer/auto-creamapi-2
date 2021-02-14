@@ -84,18 +84,18 @@ namespace auto_creamapi.Services
 
         public SteamApp GetAppByName(string name)
         {
-            MyLogger.Log.Information($"Trying to get app {name}");
+            MyLogger.Log.Information("Trying to get app {Name}", name);
             var comparableName = Regex.Replace(name, Misc.SpecialCharsRegex, "").ToLower();
             var app = _cache.FirstOrDefault(x => x.CompareName(comparableName));
-            if (app != null) MyLogger.Log.Information($"Successfully got app {app}");
+            if (app != null) MyLogger.Log.Information("Successfully got app {App}", app);
             return app;
         }
 
         public SteamApp GetAppById(int appid)
         {
-            MyLogger.Log.Information($"Trying to get app with ID {appid}");
+            MyLogger.Log.Information("Trying to get app with ID {AppId}", appid);
             var app = _cache.FirstOrDefault(x => x.AppId.Equals(appid));
-            if (app != null) MyLogger.Log.Information($"Successfully got app {app}");
+            if (app != null) MyLogger.Log.Information("Successfully got app {App}", app);
             return app;
         }
 
@@ -108,7 +108,7 @@ namespace auto_creamapi.Services
                 var steamAppDetails = await AppDetails.GetAsync(steamApp.AppId).ConfigureAwait(false);
                 if (steamAppDetails != null)
                 {
-                    MyLogger.Log.Debug($"Type for Steam App {steamApp.Name}: \"{steamAppDetails.Type}\"");
+                    MyLogger.Log.Debug("Type for Steam App {Name}: \"{Type}\"", steamApp.Name, steamAppDetails.Type);
                     if (steamAppDetails.Type == "game" | steamAppDetails.Type == "demo")
                     {
                         steamAppDetails.DLC.ForEach(x =>
@@ -121,7 +121,7 @@ namespace auto_creamapi.Services
                                 : new SteamApp { AppId = x, Name = $"Unknown DLC {x}" });
                         });
 
-                        dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
+                        dlcList.ForEach(x => MyLogger.Log.Debug("{AppId}={Name}", x.AppId, x.Name));
                         MyLogger.Log.Information("Got DLC successfully...");
                         
                         if (!useSteamDb) return dlcList;
@@ -138,12 +138,12 @@ namespace auto_creamapi.Services
                         MyLogger.Log.Information("Get SteamDB App");
                         var httpCall = client.GetAsync(steamDbUri);
                         var response = await httpCall.ConfigureAwait(false);
-                        MyLogger.Log.Debug(httpCall.Status.ToString());
-                        MyLogger.Log.Debug(response.EnsureSuccessStatusCode().ToString());
+                        MyLogger.Log.Debug("{Status}", httpCall.Status.ToString());
+                        MyLogger.Log.Debug("{Boolean}", response.EnsureSuccessStatusCode().ToString());
 
                         var readAsStringAsync = response.Content.ReadAsStringAsync();
                         var responseBody = await readAsStringAsync.ConfigureAwait(false);
-                        MyLogger.Log.Debug(readAsStringAsync.Status.ToString());
+                        MyLogger.Log.Debug("{Status}", readAsStringAsync.Status.ToString());
 
                         var parser = new HtmlParser();
                         var doc = parser.ParseDocument(responseBody);
@@ -163,7 +163,7 @@ namespace auto_creamapi.Services
 
                                 if (ignoreUnknown && dlcName.Contains("SteamDB Unknown App"))
                                 {
-                                    MyLogger.Log.Information($"Skipping SteamDB Unknown App {dlcId}");
+                                    MyLogger.Log.Information("Skipping SteamDB Unknown App {DlcId}", dlcId);
                                 }
                                 else
                                 {
@@ -179,7 +179,7 @@ namespace auto_creamapi.Services
                                     }
                                 }
                             }
-                            dlcList.ForEach(x => MyLogger.Log.Debug($"{x.AppId}={x.Name}"));
+                            dlcList.ForEach(x => MyLogger.Log.Debug("{AppId}={Name}", x.AppId, x.Name));
                             MyLogger.Log.Information("Got DLC from SteamDB successfully...");
                         }
                         else

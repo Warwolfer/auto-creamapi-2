@@ -66,8 +66,8 @@ namespace auto_creamapi.Services
             var x64File = Path.Combine(TargetPath, "steam_api64.dll");
             _x86Exists = File.Exists(x86File);
             _x64Exists = File.Exists(x64File);
-            if (_x86Exists) MyLogger.Log.Information($"x86 SteamAPI DLL found: {x86File}");
-            if (_x64Exists) MyLogger.Log.Information($"x64 SteamAPI DLL found: {x64File}");
+            if (_x86Exists) MyLogger.Log.Information("x86 SteamAPI DLL found: {X}", x86File);
+            if (_x64Exists) MyLogger.Log.Information("x64 SteamAPI DLL found: {X}", x64File);
         }
 
         public bool CreamApiApplied()
@@ -83,7 +83,7 @@ namespace auto_creamapi.Services
             var targetSteamApiDll = Path.Combine(TargetPath, _creamDlls[arch].Filename);
             var targetSteamApiOrigDll = Path.Combine(TargetPath, _creamDlls[arch].OrigFilename);
             var targetSteamApiDllBackup = Path.Combine(TargetPath, $"{_creamDlls[arch].Filename}.backup");
-            MyLogger.Log.Information($"Setting up CreamAPI DLL @ {TargetPath} (arch :{arch})");
+            MyLogger.Log.Information("Setting up CreamAPI DLL @ {TargetPath} (arch :{Arch})", TargetPath, arch);
             // Create backup of steam_api.dll
             File.Copy(targetSteamApiDll, targetSteamApiDllBackup, true);
             // Check if steam_api_o.dll already exists

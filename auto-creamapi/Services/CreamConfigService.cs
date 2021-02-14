@@ -65,7 +65,7 @@ namespace auto_creamapi.Services
             _configFilePath = configFilePath;
             if (File.Exists(configFilePath))
             {
-                MyLogger.Log.Information($"Config file found @ {configFilePath}, parsing...");
+                MyLogger.Log.Information("Config file found @ {ConfigFilePath}, parsing...", configFilePath);
                 var parser = new FileIniDataParser();
                 var data = parser.ReadFile(_configFilePath, Encoding.UTF8);
 
@@ -83,7 +83,7 @@ namespace auto_creamapi.Services
             }
             else
             {
-                MyLogger.Log.Information($"Config file does not exist @ {configFilePath}, skipping...");
+                MyLogger.Log.Information("Config file does not exist @ {ConfigFilePath}, skipping...", configFilePath);
                 ResetConfigData();
             }
         }
