@@ -1,5 +1,6 @@
 using Serilog;
 using Serilog.Core;
+using Serilog.Exceptions;
 
 namespace auto_creamapi.Utils
 {
@@ -7,6 +8,7 @@ namespace auto_creamapi.Utils
     {
         public static readonly Logger Log = new LoggerConfiguration()
             .MinimumLevel.Debug()
+            .Enrich.WithExceptionDetails()
             .WriteTo.Console()
             .WriteTo.File("autocreamapi.log", rollingInterval: RollingInterval.Day)
             .CreateLogger();

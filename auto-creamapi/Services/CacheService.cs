@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -211,7 +212,7 @@ namespace auto_creamapi.Services
             catch (Exception e)
             {
                 MyLogger.Log.Error("Could not get DLC!");
-                Console.WriteLine(e);
+                MyLogger.Log.Debug(e.Demystify(), "Exception thrown!");
             }
 
             return dlcList;
