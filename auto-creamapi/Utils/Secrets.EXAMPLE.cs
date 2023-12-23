@@ -6,9 +6,9 @@ namespace auto_creamapi.Utils
     ///     Rename class Secrets_REMOVETHIS to Secrets
     ///     Enter the relevant info below
     /// </summary>
-    public class Secrets_REMOVETHIS
+    public static class Secrets_REMOVETHIS
     {
-        public const string Username = "Enter username here";
-        public const string Password = "Enter password here";
+        public const string ForumUsername = "Enter username here";
+        public const string ForumPassword = "Enter password here";
     }
 }
