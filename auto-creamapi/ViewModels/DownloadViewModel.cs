@@ -5,6 +5,7 @@ using System.Windows;
 using auto_creamapi.Messenger;
 using auto_creamapi.Services;
 using auto_creamapi.Utils;
+using Microsoft.Extensions.Logging;
 using MvvmCross.Logging;
 using MvvmCross.Navigation;
 using MvvmCross.Plugin.Messenger;
@@ -12,24 +13,26 @@ using MvvmCross.ViewModels;
 
 namespace auto_creamapi.ViewModels
 {
-    
+
     public class DownloadViewModel : MvxNavigationViewModel
     {
         private readonly IDownloadCreamApiService _download;
         private readonly IMvxNavigationService _navigationService;
         private readonly MvxSubscriptionToken _token;
+        private readonly ILogger<DownloadViewModel> _logger;
         private string _filename;
 
         private string _info;
         private double _progress;
 
-        public DownloadViewModel(IMvxLogProvider logProvider, IMvxNavigationService navigationService,
-            IDownloadCreamApiService download, IMvxMessenger messenger) : base(logProvider, navigationService)
+        public DownloadViewModel(ILoggerFactory loggerFactory, IMvxNavigationService navigationService,
+            IDownloadCreamApiService download, IMvxMessenger messenger) : base(loggerFactory, navigationService)
         {
             _navigationService = navigationService;
+            _logger = loggerFactory.CreateLogger<DownloadViewModel>();
             _download = download;
             _token = messenger.Subscribe<ProgressMessage>(OnProgressMessage);
-            MyLogger.Log.Debug("{Count}", messenger.CountSubscriptionsFor<ProgressMessage>());
+            _logger.LogDebug("{Count}", messenger.CountSubscriptionsFor<ProgressMessage>());
         }
 
         public string InfoLabel

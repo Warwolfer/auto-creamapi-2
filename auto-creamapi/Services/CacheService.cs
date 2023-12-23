@@ -37,7 +37,7 @@ namespace auto_creamapi.Services
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/87.0.4280.88 Safari/537.36";
 
-        private HashSet<SteamApp> _cache = new HashSet<SteamApp>();
+        private HashSet<SteamApp> _cache = [];
 
         public async Task Initialize()
         {
@@ -113,7 +113,7 @@ namespace auto_creamapi.Services
                     {
                         MyLogger.Log.Debug("Type for Steam App {Name}: \"{Type}\"", steamApp.Name,
                             steamAppDetails.Type);
-                        if (steamAppDetails.Type == "game" | steamAppDetails.Type == "demo")
+                        if (steamAppDetails.Type == "game" || steamAppDetails.Type == "demo")
                         {
                             steamAppDetails.DLC.ForEach(x =>
                             {
@@ -121,8 +121,8 @@ namespace auto_creamapi.Services
                                 if (result == null) return;
                                 var dlcDetails = AppDetails.GetAsync(x).Result;
                                 dlcList.Add(dlcDetails != null
-                                    ? new SteamApp {AppId = dlcDetails.SteamAppId, Name = dlcDetails.Name}
-                                    : new SteamApp {AppId = x, Name = $"Unknown DLC {x}"});
+                                    ? new SteamApp { AppId = dlcDetails.SteamAppId, Name = dlcDetails.Name }
+                                    : new SteamApp { AppId = x, Name = $"Unknown DLC {x}" });
                             });
 
                             dlcList.ForEach(x => MyLogger.Log.Debug("{AppId}={Name}", x.AppId, x.Name));
@@ -130,10 +130,6 @@ namespace auto_creamapi.Services
 
                             if (!useSteamDb) return dlcList;
 
-                            // Get DLC from SteamDB
-                            // Get Cloudflare cookie
-                            // Scrape and parse HTML page
-                            // Add missing to DLC list
                             var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
 
                             var client = new HttpClient();
@@ -143,7 +139,9 @@ namespace auto_creamapi.Services
                             var httpCall = client.GetAsync(steamDbUri);
                             var response = await httpCall.ConfigureAwait(false);
                             MyLogger.Log.Debug("{Status}", httpCall.Status.ToString());
-                            MyLogger.Log.Debug("{Boolean}", response.EnsureSuccessStatusCode().ToString());
+                            MyLogger.Log.Debug("{Boolean}", response.IsSuccessStatusCode.ToString());
+
+                            response.EnsureSuccessStatusCode();
 
                             var readAsStringAsync = response.Content.ReadAsStringAsync();
                             var responseBody = await readAsStringAsync.ConfigureAwait(false);
@@ -171,7 +169,7 @@ namespace auto_creamapi.Services
                                     }
                                     else
                                     {
-                                        var dlcApp = new SteamApp {AppId = Convert.ToInt32(dlcId), Name = dlcName};
+                                        var dlcApp = new SteamApp { AppId = Convert.ToInt32(dlcId), Name = dlcName };
                                         var i = dlcList.FindIndex(x => x.AppId.Equals(dlcApp.AppId));
                                         if (i > -1)
                                         {

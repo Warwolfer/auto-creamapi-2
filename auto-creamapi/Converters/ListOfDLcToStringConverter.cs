@@ -31,24 +31,26 @@ namespace auto_creamapi.Converters
         {
             MyLogger.Log.Debug("ListOfDLcToStringConverter: ConvertBack");
             var stringToDlcList = StringToDlcList(value);
-            return stringToDlcList.GetType() == targetType ? stringToDlcList : new ObservableCollection<SteamApp>();
+            return stringToDlcList.GetType() == targetType ? stringToDlcList : [];
         }
 
         private static ObservableCollection<SteamApp> StringToDlcList(string value)
         {
             var result = new ObservableCollection<SteamApp>();
-            var expression = new Regex(@"(?<id>.*) *= *(?<name>.*)");
+            var expression = new Regex("(?<id>.*) *= *(?<name>.*)");
             using var reader = new StringReader(value);
             string line;
             while ((line = reader.ReadLine()) != null)
             {
                 var match = expression.Match(line);
                 if (match.Success)
+                {
                     result.Add(new SteamApp
                     {
                         AppId = int.Parse(match.Groups["id"].Value),
                         Name = match.Groups["name"].Value
                     });
+                }
             }
 
             return result;

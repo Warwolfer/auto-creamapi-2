@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using auto_creamapi.Models;
 using auto_creamapi.Utils;
+using Microsoft.Extensions.Logging;
 using MvvmCross.Commands;
 using MvvmCross.Logging;
 using MvvmCross.Navigation;
@@ -13,16 +14,18 @@ namespace auto_creamapi.ViewModels
         IMvxViewModel<IEnumerable<SteamApp>, SteamApp>
     {
         private readonly IMvxNavigationService _navigationService;
+        private readonly ILogger<SearchResultViewModel> _logger;
         private IEnumerable<SteamApp> _steamApps;
 
         /*public override async Task Initialize()
         {
             await base.Initialize();
         }*/
-        public SearchResultViewModel(IMvxLogProvider logProvider, IMvxNavigationService navigationService) : base(
-            logProvider, navigationService)
+        public SearchResultViewModel(ILoggerFactory loggerFactory, IMvxNavigationService navigationService) : base(
+            loggerFactory, navigationService)
         {
             _navigationService = navigationService;
+            _logger = loggerFactory.CreateLogger<SearchResultViewModel>();
         }
 
         public IEnumerable<SteamApp> Apps
@@ -55,9 +58,11 @@ namespace auto_creamapi.ViewModels
 
         public override void ViewDestroy(bool viewFinishing = true)
         {
-            if (viewFinishing && CloseCompletionSource != null && !CloseCompletionSource.Task.IsCompleted &&
+            if (viewFinishing && CloseCompletionSource?.Task.IsCompleted == false &&
                 !CloseCompletionSource.Task.IsFaulted)
+            {
                 CloseCompletionSource?.TrySetCanceled();
+            }
 
             base.ViewDestroy(viewFinishing);
         }
@@ -66,7 +71,7 @@ namespace auto_creamapi.ViewModels
         {
             if (Selected != null)
             {
-                MyLogger.Log.Information("Successfully got app {Selected}", Selected);
+                _logger.LogInformation("Successfully got app {Selected}", Selected);
                 await _navigationService.Close(this, Selected).ConfigureAwait(false);
             }
         }

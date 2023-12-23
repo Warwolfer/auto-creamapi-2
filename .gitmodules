@@ -1,0 +1,3 @@
+[submodule "SteamStorefrontAPI"]
+	path = SteamStorefrontAPI
+	url = https://git.jeddunk.xyz/jeddunk/SteamStorefrontAPI.git

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using auto_creamapi.Models;
 using auto_creamapi.Services;
 using auto_creamapi.Utils;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
@@ -19,6 +20,7 @@ namespace auto_creamapi.ViewModels
         private readonly ICacheService _cache;
         private readonly ICreamConfigService _config;
 
+        private readonly ILogger<MainViewModel> _logger;
         private readonly ICreamDllService _dll;
         private readonly IMvxNavigationService _navigationService;
         private int _appId;
@@ -43,9 +45,10 @@ namespace auto_creamapi.ViewModels
         //private const string DlcRegexPattern = @"(?<id>.*) *= *(?<name>.*)";
 
         public MainViewModel(ICacheService cache, ICreamConfigService config, ICreamDllService dll,
-            IMvxNavigationService navigationService)
+            IMvxNavigationService navigationService, ILoggerFactory loggerFactory)
         {
             _navigationService = navigationService;
+            _logger = loggerFactory.CreateLogger<MainViewModel>();
             _cache = cache;
             _config = config;
             _dll = dll;
@@ -56,7 +59,7 @@ namespace auto_creamapi.ViewModels
         {
             base.Prepare();
             _config.Initialize();
-            var tasks = new List<Task> {_cache.Initialize()};
+            var tasks = new List<Task> { _cache.Initialize() };
             if (!File.Exists("steam_api.dll") | !File.Exists("steam_api64.dll"))
                 tasks.Add(_navigationService.Navigate<DownloadViewModel>());
             //tasks.Add(_navigationService.Navigate<DownloadViewModel>());
@@ -310,7 +313,7 @@ namespace auto_creamapi.ViewModels
             }
             else
             {
-                MyLogger.Log.Warning("Empty game name, cannot initiate search!");
+                _logger.LogWarning("Empty game name, cannot initiate search!");
             }
 
             MainWindowEnabled = true;
@@ -321,7 +324,7 @@ namespace auto_creamapi.ViewModels
             Status = "Trying to get DLC...";
             if (AppId > 0)
             {
-                var app = new SteamApp {AppId = AppId, Name = GameName};
+                var app = new SteamApp { AppId = AppId, Name = GameName };
                 var task = _cache.GetListOfDlc(app, UseSteamDb, IgnoreUnknown);
                 MainWindowEnabled = false;
                 var listOfDlc = await task.ConfigureAwait(false);
@@ -341,7 +344,7 @@ namespace auto_creamapi.ViewModels
             else
             {
                 Status = $"Could not get DLC for AppID {AppId}";
-                MyLogger.Log.Error("GetListOfDlc: Invalid AppID {AppId}", AppId);
+                _logger.LogError("GetListOfDlc: Invalid AppID {AppId}", AppId);
             }
         }
 
@@ -392,7 +395,7 @@ namespace auto_creamapi.ViewModels
             }
             else
             {
-                MyLogger.Log.Error("OpenURL: Invalid AppID {AppId}", AppId);
+                _logger.LogError("OpenURL: Invalid AppID {AppId}", AppId);
                 Status = $"Could not open URL: Invalid AppID {AppId}";
             }
         }
