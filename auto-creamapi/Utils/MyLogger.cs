@@ -4,7 +4,7 @@ using Serilog.Exceptions;
 
 namespace auto_creamapi.Utils
 {
-    public class MyLogger
+    public static class MyLogger
     {
         public static readonly Logger Log = new LoggerConfiguration()
             .MinimumLevel.Debug()

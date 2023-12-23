@@ -10,7 +10,7 @@ namespace auto_creamapi
     {
         protected override void RegisterSetup()
         {
-            this.RegisterSetupType<MvxWpfSetup<Core.App>>();
+            this.RegisterSetupType<MvxWpfSetup<Core.MainApplication>>();
         }
     }
 }

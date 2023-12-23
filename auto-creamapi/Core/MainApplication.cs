@@ -4,7 +4,7 @@ using MvvmCross.ViewModels;
 
 namespace auto_creamapi.Core
 {
-    public class App : MvxApplication
+    public class MainApplication : MvxApplication
     {
         public override void Initialize()
         {
