@@ -86,6 +86,8 @@ namespace auto_creamapi.ViewModels
 
         public IMvxCommand GoToForumThreadCommand => new MvxCommand(GoToForumThread);
 
+        public IMvxCommand GoToSteamdbCommand => new MvxCommand(GoToSteamdb);
+
         // // ATTRIBUTES // //
 
         public bool MainWindowEnabled
@@ -383,9 +385,29 @@ namespace auto_creamapi.ViewModels
             {
                 var searchTerm = AppId; //$"{GameName.Replace(" ", "+")}+{appId}";
                 var destinationUrl =
-                    "https://cs.rin.ru/forum/search.php?keywords=" +
-                    searchTerm +
-                    "&terms=any&fid[]=10&sf=firstpost&sr=topics&submit=Search";
+                    $"https://cs.rin.ru/forum/search.php?keywords={searchTerm}&terms=any&fid[]=10&sf=firstpost&sr=topics&submit=Search";
+                var uri = new Uri(destinationUrl);
+                var process = new ProcessStartInfo(uri.AbsoluteUri)
+                {
+                    UseShellExecute = true
+                };
+                Process.Start(process);
+            }
+            else
+            {
+                _logger.LogError("OpenURL: Invalid AppID {AppId}", AppId);
+                Status = $"Could not open URL: Invalid AppID {AppId}";
+            }
+        }
+
+        private void GoToSteamdb()
+        {
+            Status = "Opening URL...";
+            if (AppId > 0)
+            {
+                var searchTerm = AppId; //$"{GameName.Replace(" ", "+")}+{appId}";
+                var destinationUrl =
+                    $"https://steamdb.info/app/{searchTerm}/dlc/";
                 var uri = new Uri(destinationUrl);
                 var process = new ProcessStartInfo(uri.AbsoluteUri)
                 {
