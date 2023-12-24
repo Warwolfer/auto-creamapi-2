@@ -1,19 +1,16 @@
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using auto_creamapi.Messenger;
 using auto_creamapi.Services;
 using auto_creamapi.Utils;
 using Microsoft.Extensions.Logging;
-using MvvmCross.Logging;
 using MvvmCross.Navigation;
 using MvvmCross.Plugin.Messenger;
 using MvvmCross.ViewModels;
 
 namespace auto_creamapi.ViewModels
 {
-
     public class DownloadViewModel : MvxNavigationViewModel
     {
         private readonly IDownloadCreamApiService _download;
@@ -24,6 +21,8 @@ namespace auto_creamapi.ViewModels
 
         private string _info;
         private double _progress;
+
+        private readonly Secrets _secrets = new();
 
         public DownloadViewModel(ILoggerFactory loggerFactory, IMvxNavigationService navigationService,
             IDownloadCreamApiService download, IMvxMessenger messenger) : base(loggerFactory, navigationService)
@@ -80,10 +79,8 @@ namespace auto_creamapi.ViewModels
             try
             {
                 await base.Initialize().ConfigureAwait(false);
-                var download = _download.Download(Secrets.ForumUsername, Secrets.ForumPassword);
+                var download = _download.Download(_secrets.ForumUsername(), _secrets.ForumPassword());
                 var filename = await download.ConfigureAwait(false);
-                /*var extract = _download.Extract(filename);
-                await extract;*/
                 var extract = _download.Extract(filename);
                 await extract.ConfigureAwait(false);
                 _token.Dispose();
@@ -102,7 +99,6 @@ namespace auto_creamapi.ViewModels
 
         private void OnProgressMessage(ProgressMessage obj)
         {
-            //MyLogger.Log.Debug($"{obj.Filename}: {obj.BytesTransferred}");
             InfoLabel = obj.Info;
             FilenameLabel = obj.Filename;
             Progress = obj.PercentComplete;
