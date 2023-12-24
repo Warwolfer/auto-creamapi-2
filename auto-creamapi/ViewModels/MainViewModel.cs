@@ -323,7 +323,7 @@ namespace auto_creamapi.ViewModels
 
         private async Task GetListOfDlc()
         {
-            Status = "Trying to get DLC...";
+            Status = "Trying to get DLC, please wait...";
             if (AppId > 0)
             {
                 var app = new SteamApp { AppId = AppId, Name = GameName };

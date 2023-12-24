@@ -33,10 +33,6 @@ namespace auto_creamapi.Services
         private const string CachePath = "steamapps.json";
         private const string SteamUri = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
 
-        private const string UserAgent =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "Chrome/87.0.4280.88 Safari/537.36";
-
         private HashSet<SteamApp> _cache = [];
 
         public async Task Initialize()
@@ -128,15 +124,32 @@ namespace auto_creamapi.Services
                             dlcList.ForEach(x => MyLogger.Log.Debug("{AppId}={Name}", x.AppId, x.Name));
                             MyLogger.Log.Information("Got DLC successfully...");
 
+                            // Return if Steam DB is deactivated
                             if (!useSteamDb) return dlcList;
 
-                            var steamDbUri = new Uri($"https://steamdb.info/app/{steamApp.AppId}/dlc/");
+                            string steamDbUrl = $"https://steamdb.info/app/{steamApp.AppId}/dlc/";
 
                             var client = new HttpClient();
-                            client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                            string archiveJson = await client.GetStringAsync($"https://archive.org/wayback/available?url={steamDbUrl}");
+                            var archiveResult = JsonSerializer.Deserialize<AvailableArchive>(archiveJson);
+
+                            if (archiveResult == null || archiveResult.ArchivedSnapshots.Closest.Status != "200")
+                            {
+                                return dlcList;
+                            }
+
+                            //language=regex
+                            const string pattern = @"^(https?:\/\/web\.archive\.org\/web\/\d+)(\/.+)$";
+                            const string substitution = "$1id_$2";
+                            const RegexOptions options = RegexOptions.Multiline;
+
+                            Regex regex = new(pattern, options);
+                            string newUrl = regex.Replace(archiveResult.ArchivedSnapshots.Closest.Url, substitution);
+
+                            //client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
                             MyLogger.Log.Information("Get SteamDB App");
-                            var httpCall = client.GetAsync(steamDbUri);
+                            var httpCall = client.GetAsync(newUrl);
                             var response = await httpCall.ConfigureAwait(false);
                             MyLogger.Log.Debug("{Status}", httpCall.Status.ToString());
                             MyLogger.Log.Debug("{Boolean}", response.IsSuccessStatusCode.ToString());
