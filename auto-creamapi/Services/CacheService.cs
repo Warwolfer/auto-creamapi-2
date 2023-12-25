@@ -133,7 +133,7 @@ namespace auto_creamapi.Services
                             string archiveJson = await client.GetStringAsync($"https://archive.org/wayback/available?url={steamDbUrl}");
                             var archiveResult = JsonSerializer.Deserialize<AvailableArchive>(archiveJson);
 
-                            if (archiveResult == null || archiveResult.ArchivedSnapshots.Closest.Status != "200")
+                            if (archiveResult == null || archiveResult.ArchivedSnapshots.Closest?.Status != "200")
                             {
                                 return dlcList;
                             }

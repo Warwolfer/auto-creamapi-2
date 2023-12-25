@@ -33,6 +33,7 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 		<PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
+		<PackageReference Include="SteamStorefrontAPI" Version="2.0.1.421" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -52,10 +53,6 @@
 		<Content Include="resources\7z.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\SteamStorefrontAPI\SteamStorefrontAPI\SteamStorefrontAPI.csproj" />
 	</ItemGroup>
 
 </Project>
