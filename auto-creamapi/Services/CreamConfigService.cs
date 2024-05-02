@@ -105,8 +105,8 @@ namespace auto_creamapi.Services
             {
                 data["dlc"].AddKey(key.ToString(), value);
             }*/
-
-            parser.WriteFile(_configFilePath, data, Encoding.UTF8);
+ 
+            parser.WriteFile(_configFilePath, data, new UTF8Encoding(false));
         }
 
         public void SetConfigData(int appId,

@@ -22,8 +22,6 @@ namespace auto_creamapi.ViewModels
         private string _info;
         private double _progress;
 
-        private readonly Secrets _secrets = new();
-
         public DownloadViewModel(ILoggerFactory loggerFactory, IMvxNavigationService navigationService,
             IDownloadCreamApiService download, IMvxMessenger messenger) : base(loggerFactory, navigationService)
         {
@@ -76,25 +74,11 @@ namespace auto_creamapi.ViewModels
 
         public override async Task Initialize()
         {
-            try
-            {
-                await base.Initialize().ConfigureAwait(false);
-                var download = _download.Download(_secrets.ForumUsername(), _secrets.ForumPassword());
-                var filename = await download.ConfigureAwait(false);
-                var extract = _download.Extract(filename);
-                await extract.ConfigureAwait(false);
-                _token.Dispose();
-                await _navigationService.Close(this).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Could not download CreamAPI!\nPlease add CreamAPI DLLs manually!\nShutting down...",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                _token.Dispose();
-                await _navigationService.Close(this).ConfigureAwait(false);
-                Console.WriteLine(e);
-                throw;
-            }
+            MessageBox.Show("Could not download CreamAPI!\nPlease add CreamAPI DLLs manually!\nShutting down...",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _token.Dispose();
+            await _navigationService.Close(this).ConfigureAwait(false);
+            Environment.Exit(0);
         }
 
         private void OnProgressMessage(ProgressMessage obj)

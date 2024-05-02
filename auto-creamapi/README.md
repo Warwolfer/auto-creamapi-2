@@ -1,5 +1,7 @@
 # Auto-CreamAPI 2
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H4330U3)
+[Fork of the original Auto-CreamAPI 2](https://git.jeddunk.xyz/jeddunk/auto-creamapi-2)
+
+[Support the original creator (Jeddunk) on Ko-fi.](https://ko-fi.com/H2H4330U3)
 
 Set your game automatically up for use with CreamAPI.
 
@@ -13,6 +15,7 @@ Set your game automatically up for use with CreamAPI.
 Download the latest release and extract it into any folder (e.g. `%USERPROFILE%\Desktop\auto-creamapi`).
 
 ## Usage
+* Download creamapi and extract the content inside the folder.
 * Double-click `auto-creamapi.exe` to open the application. (When starting it for the first time, it might take a few
  seconds since it needs to cache a list of games available on the Steam Store and download the latest CreamAPI DLL files.)
 * Click on the *Open File* button on the top right and select the *steam_api.dll* or *steam_api64.dll* 
