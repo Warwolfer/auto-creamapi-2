@@ -24,6 +24,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             string dlcList);
 
         public void SetConfigData(int appId,
@@ -31,6 +33,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             List<SteamApp> dlcList);
 
         public void SetConfigData(int appId,
@@ -38,6 +42,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             IEnumerable<SteamApp> dlcList);
 
         public bool ConfigExists();
@@ -75,6 +81,8 @@ namespace auto_creamapi.Services
                 Config.UnlockAll = Convert.ToBoolean(data["steam"]["unlockall"]);
                 Config.ExtraProtection = Convert.ToBoolean(data["steam"]["extraprotection"]);
                 Config.ForceOffline = Convert.ToBoolean(data["steam"]["forceoffline"]);
+                Config.DisableUserInterface = Convert.ToBoolean(data["steam"]["disableuserinterface"]);
+                Config.FilesToHide = data["steam_misc"]["filestohide"];
 
                 var dlcCollection = data["dlc"];
                 foreach (var item in dlcCollection)
@@ -99,6 +107,14 @@ namespace auto_creamapi.Services
             data["steam"]["extraprotection"] = Config.ExtraProtection.ToString();
             data["steam"]["forceoffline"] = Config.ForceOffline.ToString();
 
+            if (Config.FilesToHide != null)
+            {
+                data["steam"]["filestohide"] = Config.FilesToHide;
+            }
+
+            data.Sections.AddSection("steam_misc");
+            data["steam_misc"]["disableuserinterface"] = Config.DisableUserInterface.ToString();
+
             data.Sections.AddSection("dlc");
             Config.DlcList.ForEach(x => data["dlc"].AddKey(x.AppId.ToString(), x.Name));
             /*foreach (var steamApp in Config.DlcList)
@@ -114,6 +130,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             string dlcList)
         {
             Config.AppId = appId;
@@ -121,6 +139,8 @@ namespace auto_creamapi.Services
             Config.UnlockAll = unlockAll;
             Config.ExtraProtection = extraProtection;
             Config.ForceOffline = forceOffline;
+            Config.FilesToHide = filesToHide;
+            Config.DisableUserInterface = disableUserInterface;
             SetDlcFromString(dlcList);
         }
 
@@ -129,6 +149,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             List<SteamApp> dlcList)
         {
             Config.AppId = appId;
@@ -136,6 +158,8 @@ namespace auto_creamapi.Services
             Config.UnlockAll = unlockAll;
             Config.ExtraProtection = extraProtection;
             Config.ForceOffline = forceOffline;
+            Config.FilesToHide = filesToHide;
+            Config.DisableUserInterface = disableUserInterface;
             Config.DlcList = dlcList;
         }
 
@@ -144,6 +168,8 @@ namespace auto_creamapi.Services
             bool unlockAll,
             bool extraProtection,
             bool forceOffline,
+            string filesToHide,
+            bool disableUserInterface,
             IEnumerable<SteamApp> dlcList)
         {
             Config.AppId = appId;
@@ -151,6 +177,8 @@ namespace auto_creamapi.Services
             Config.UnlockAll = unlockAll;
             Config.ExtraProtection = extraProtection;
             Config.ForceOffline = forceOffline;
+            Config.FilesToHide = filesToHide;
+            Config.DisableUserInterface = disableUserInterface;
             Config.DlcList = new List<SteamApp>(dlcList);
         }
 
@@ -166,6 +194,8 @@ namespace auto_creamapi.Services
             Config.UnlockAll = false;
             Config.ExtraProtection = false;
             Config.ForceOffline = false;
+            Config.DisableUserInterface = false;
+            Config.FilesToHide = "";
             Config.DlcList.Clear();
         }
 

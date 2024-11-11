@@ -30,6 +30,8 @@ namespace auto_creamapi.ViewModels
         private string _dllPath;
         private bool _extraProtection;
         private string _gameName;
+        private bool _disableUserInterface;
+        private string _filesToHide;
         private string _lang;
         private ObservableCollection<string> _languages;
 
@@ -158,6 +160,26 @@ namespace auto_creamapi.ViewModels
             {
                 _extraProtection = value;
                 RaisePropertyChanged(() => ExtraProtection);
+            }
+        }
+
+        public string FilesToHide
+        {
+            get => _filesToHide;
+            set
+            {
+                _filesToHide = value;
+                RaisePropertyChanged(() => FilesToHide);
+            }
+        }
+
+        public bool DisableUserInterface
+        {
+            get => _disableUserInterface;
+            set
+            {
+                _disableUserInterface = value;
+                RaisePropertyChanged(() => DisableUserInterface);
             }
         }
 
@@ -359,6 +381,8 @@ namespace auto_creamapi.ViewModels
                 UnlockAll,
                 ExtraProtection,
                 Offline,
+                FilesToHide,
+                DisableUserInterface,
                 Dlcs
             );
             _config.SaveFile();
@@ -374,6 +398,8 @@ namespace auto_creamapi.ViewModels
             UnlockAll = _config.Config.UnlockAll;
             ExtraProtection = _config.Config.ExtraProtection;
             Offline = _config.Config.ForceOffline;
+            FilesToHide = _config.Config.FilesToHide;
+            DisableUserInterface = _config.Config.DisableUserInterface;
             Dlcs = new ObservableCollection<SteamApp>(_config.Config.DlcList);
             Status = "Changes have been reset.";
         }

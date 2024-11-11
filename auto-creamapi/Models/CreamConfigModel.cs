@@ -15,6 +15,8 @@ namespace auto_creamapi.Models
         public bool UnlockAll { get; set; }
         public bool ExtraProtection { get; set; }
         public bool ForceOffline { get; set; }
+        public bool DisableUserInterface { get; set; }
+        public string FilesToHide { get; set; }
         public List<SteamApp> DlcList { get; set; }
 
         public override string ToString()
@@ -24,6 +26,8 @@ namespace auto_creamapi.Models
                          $"UnlockAll: {UnlockAll}\n" +
                          $"ExtraProtection: {ExtraProtection}\n" +
                          $"ForceOffline: {ForceOffline}\n" +
+                         $"DisableUserInterface: {DisableUserInterface}\n" +
+                         $"FilesToHide: {FilesToHide}\n" +
                          $"DLC ({DlcList.Count}):\n[\n";
             if (DlcList.Count > 0)
                 value = DlcList.Aggregate(value, (current, x) => current + $"  {x.AppId}={x.Name},\n");

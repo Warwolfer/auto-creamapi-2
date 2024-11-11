@@ -5,12 +5,12 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<RootNamespace>auto_creamapi</RootNamespace>
 		<UseWPF>true</UseWPF>
-		<PackageVersion>2.2.1</PackageVersion>
+		<PackageVersion>2.2.2</PackageVersion>
 		<Title>auto-creamapi</Title>
 		<Authors>Jeddunk</Authors>
 		<Company>jeddunk.xyz</Company>
-		<AssemblyVersion>2.2.1</AssemblyVersion>
-		<FileVersion>2.2.1</FileVersion>
+		<AssemblyVersion>2.2.2</AssemblyVersion>
+		<FileVersion>2.2.2</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
